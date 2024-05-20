@@ -4,6 +4,9 @@ import struct
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.shortcuts import PromptSession
 from time import perf_counter
+from PIL import Image
+
+current_image = b'\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
 
 DEFAULT_PORT = "COM24"
 DEFAULT_BAUDRATE = 9600
@@ -51,6 +54,11 @@ AWAIT_TYPE = 1
 AWAIT_SIZE = 2
 AWAIT_PAYLOAD = 3
 
+#command types for lunarterm use:
+CMD_TO_EDDY = 0
+CMD_LOCAL = 1
+
+
 #macros
 macros_dict = {
     "prep_mot" : [(MD_ID, MOTOR_ENABLE, 1), 
@@ -63,38 +71,33 @@ macros_dict = {
                     (PM_ID, MOTOR_POWER, 0)]
 }
 
-TYPE0 = b'\x00'
-TYPE1 = b'\x01'
+TEXT_FRAME = b'\x00'
+IMAGE_FRAME = b'\x01'
+# TYPE2 = b'\x02'
 
-class FrameType1():
+class Frame():
     def __init__(self):
+        self.type = None
         self.size = 0
         self.payload = b''
 
     def to_string(self):
-        return 'frame type 1, with size: ' + str(self.size) + ' and payload: ' + self.payload.decode()
-    
-# async def print_everything(serial):
-#     try:
-#         while True:
-#             if(serial.in_waiting > 0):
-#                 out = serial.read(serial.in_waiting)
-#                 print('[EDDY]', out.decode(), end='')
-#             await asyncio.sleep(0.001)
-#     except asyncio.CancelledError:
-#         pass
+        return f'frame type {self.type}, with size: {self.size} and payload: {self.payload}'
+
 
 async def print_frames(serial):
+    frame = None
+    state = 0
+    current = 0
+    start_time = 0
     def reset():
         nonlocal state, current, frame, start_time 
         state = AWAIT_START
         current = 0
-        frame = FrameType1()
+        frame = None
         start_time = 0
-    state = AWAIT_START
-    current = 0
-    frame = FrameType1()
-    start_time = 0
+    image = b''
+    reset()
     try:
         while True:
             while serial.in_waiting == 0:
@@ -109,10 +112,9 @@ async def print_frames(serial):
                 else:
                     reset()
             elif state == AWAIT_TYPE:
-                if out == TYPE1:
-                    state = AWAIT_SIZE
-                else:
-                    reset()
+                frame = Frame()
+                frame.type = out
+                state = AWAIT_SIZE
             elif state == AWAIT_SIZE:
                 frame.size = int.from_bytes(out, 'little')
                 state = AWAIT_PAYLOAD
@@ -120,7 +122,11 @@ async def print_frames(serial):
                 current += 1
                 frame.payload += out
                 if current == frame.size:
-                    print('[EDDY]', frame.to_string(), end='')
+                    if frame.type == TEXT_FRAME:
+                        print('[EDDY]', frame.to_string(), end='')
+                    elif frame.type == IMAGE_FRAME:
+                        print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
+                        current_image += frame.payload
                     reset()
     except asyncio.CancelledError:
         pass
@@ -197,8 +203,13 @@ def resolve_module(arg1):
 
     return module
 
+#TODO exceptions
 def parse_input(inp):
     inp = inp.split()
+
+    if len(inp) == 1:
+        return (CMD_LOCAL, inp[0])
+
     if len(inp) != 3:
         return None
     
@@ -221,24 +232,41 @@ def parse_input(inp):
     # command resolve
     command = resolve_command(arg2)
 
-    return [(module, command, payload)]
+    return (CMD_TO_EDDY, [(module, command, payload)])
 
 def build_frame(mod_id, cmd_id, payload):
     return  START_SYMBOL + struct.pack('IIH', mod_id, payload, cmd_id)
 
 async def interactive_shell(serial):
+    global current_image
     session = PromptSession("$ ")
     while True:
         try:
             inp = await session.prompt_async()
+            # serial.write(inp)
             params = parse_input(inp)
-            for param in params:
-                if param:
-                    mod_id, cmd_id, payload = param
-                    frame = build_frame(mod_id, cmd_id, payload)
-                    serial.write(frame)
+            if params:
+                # print('params:', params)
+                if params[0] == CMD_LOCAL:
+                    if params[1] == 'clear_image':
+                        current_image = b''
+                        print('[INFO] current image cleared')
+                    elif params[1] == 'image_info':
+                        print(f'[INFO] current image length: {len(current_image)}')
+                    elif params[1] == 'show_image':
+                        print("[INFO] image: ", current_image)
+                        pass
+                    else:
+                        print("[INFO] Wrong command")
                 else:
-                    print("[INFO] Wrong command")
+                    for param in params[1]:
+                        if param:
+                            mod_id, cmd_id, payload = param
+                            frame = build_frame(mod_id, cmd_id, payload)
+                            # print("[INFO] sending frame")
+                            serial.write(frame)
+            else:
+                print("[INFO] Wrong command")
         except (EOFError, KeyboardInterrupt):
             return
 
@@ -251,13 +279,32 @@ async def app(port, baudrate):
         background_task = asyncio.create_task(print_func(serial_port))
         try:
             await interactive_shell(serial_port)
+            # await interactive_shell(None)
         finally:
             background_task.cancel()
+            pass
 
 def main():
+    # img = Image.frombytes('L', (3, 4), current_image)
+    # img.show()
     port = input(f'Port (default: {DEFAULT_PORT}): ').strip() or DEFAULT_PORT
     baudrate = int(input(f'Baudrate (default: {DEFAULT_BAUDRATE}): ').strip() or DEFAULT_BAUDRATE)
     asyncio.run(app(port, baudrate))
 
 if __name__ == "__main__":
     main()
+    # serial_port = serial.Serial(port='COM10', baudrate=115200, bytesize=8, stopbits=serial.STOPBITS_ONE)
+    # serial_port.write(b'x')
+    # image =b''
+
+    # while serial_port.in_waiting < 5:
+    #     pass
+
+    # out = serial_port.read(5)
+    # if out == b'XOXOX':
+    #     while serial_port.in_waiting == 0:
+    #         pass
+    #     while True:
+    #         out = serial_port.read(1)
+    #         image += out
+    #         print('image length: ', len(image))
