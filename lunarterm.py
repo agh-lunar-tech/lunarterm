@@ -6,10 +6,10 @@ from prompt_toolkit.shortcuts import PromptSession
 from time import perf_counter
 from PIL import Image
 
-current_image = b'\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+current_image = b''
 
 DEFAULT_PORT = "COM24"
-DEFAULT_BAUDRATE = 9600
+DEFAULT_BAUDRATE = 115200
 START_SYMBOL = b'\x12'
 FRAME_TIMEOUT = 0.01
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
@@ -86,6 +86,8 @@ class Frame():
 
 
 async def print_frames(serial):
+    global current_image
+
     frame = None
     state = 0
     current = 0
@@ -96,12 +98,13 @@ async def print_frames(serial):
         current = 0
         frame = None
         start_time = 0
-    image = b''
+    
     reset()
     try:
         while True:
             while serial.in_waiting == 0:
-                if perf_counter() - start_time > FRAME_TIMEOUT:
+                if state != AWAIT_START and perf_counter() - start_time > FRAME_TIMEOUT:
+                    print("TIMEOUT")
                     reset()
                 await asyncio.sleep(0.001)
             out = serial.read(1)
@@ -120,16 +123,19 @@ async def print_frames(serial):
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
                 current += 1
+                print(f"Current {current}")
                 frame.payload += out
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
-                        print('[EDDY]', frame.to_string(), end='')
+                        print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME:
                         print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
                         current_image += frame.payload
                     reset()
     except asyncio.CancelledError:
-        pass
+        print('asyncio.CancelledError')
+    except Exception as e:
+        print(e)
 
 def resolve_command(arg2):
     command = 0
