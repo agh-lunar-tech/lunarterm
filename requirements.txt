@@ -1,0 +1,4 @@
+asyncio==3.4.3
+prompt-toolkit==3.0.43
+pyserial==3.5
+pillow==10.3.0
