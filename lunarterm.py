@@ -11,7 +11,7 @@ current_image = b''
 DEFAULT_PORT = "COM24"
 DEFAULT_BAUDRATE = 115200
 START_SYMBOL = b'\x12'
-FRAME_TIMEOUT = 0.01
+FRAME_TIMEOUT = 0.1
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
 
 
@@ -111,7 +111,6 @@ async def print_frames(serial):
             if state == AWAIT_START:
                 if out == START_SYMBOL:
                     state = AWAIT_TYPE
-                    start_time = perf_counter()
                 else:
                     reset()
             elif state == AWAIT_TYPE:
@@ -119,12 +118,17 @@ async def print_frames(serial):
                 frame.type = out
                 state = AWAIT_SIZE
             elif state == AWAIT_SIZE:
-                frame.size = int.from_bytes(out, 'little')
+                # frame.size = int.from_bytes(out, 'little')
+                if frame.type == IMAGE_FRAME:
+                    frame.size = 640
+                else:
+                    frame.size = int.from_bytes(out, 'little')
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
                 current += 1
-                print(f"Current {current}")
                 frame.payload += out
+                if frame.type == IMAGE_FRAME:
+                    print(f"Current {current}")
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
@@ -132,6 +136,7 @@ async def print_frames(serial):
                         print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
                         current_image += frame.payload
                     reset()
+            start_time = perf_counter()
     except asyncio.CancelledError:
         print('asyncio.CancelledError')
     except Exception as e:
@@ -260,7 +265,10 @@ async def interactive_shell(serial):
                     elif params[1] == 'image_info':
                         print(f'[INFO] current image length: {len(current_image)}')
                     elif params[1] == 'show_image':
-                        print("[INFO] image: ", current_image)
+                        if len(current_image) != 640 * 480:
+                            print("[INFO] image missing bytes")
+                        img = Image.frombytes('L', (640, 480), current_image)
+                        img.show()
                         pass
                     else:
                         print("[INFO] Wrong command")
