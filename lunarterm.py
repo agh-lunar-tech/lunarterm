@@ -6,12 +6,12 @@ from prompt_toolkit.shortcuts import PromptSession
 from time import perf_counter
 from PIL import Image
 
-current_image = b'\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+current_image = b''
 
 DEFAULT_PORT = "COM24"
-DEFAULT_BAUDRATE = 9600
+DEFAULT_BAUDRATE = 115200
 START_SYMBOL = b'\x12'
-FRAME_TIMEOUT = 0.01
+FRAME_TIMEOUT = 0.1
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
 
 
@@ -86,6 +86,8 @@ class Frame():
 
 
 async def print_frames(serial):
+    global current_image
+
     frame = None
     state = 0
     current = 0
@@ -96,19 +98,19 @@ async def print_frames(serial):
         current = 0
         frame = None
         start_time = 0
-    image = b''
+    
     reset()
     try:
         while True:
             while serial.in_waiting == 0:
-                if perf_counter() - start_time > FRAME_TIMEOUT:
+                if state != AWAIT_START and perf_counter() - start_time > FRAME_TIMEOUT:
+                    print("TIMEOUT")
                     reset()
                 await asyncio.sleep(0.001)
             out = serial.read(1)
             if state == AWAIT_START:
                 if out == START_SYMBOL:
                     state = AWAIT_TYPE
-                    start_time = perf_counter()
                 else:
                     reset()
             elif state == AWAIT_TYPE:
@@ -116,20 +118,29 @@ async def print_frames(serial):
                 frame.type = out
                 state = AWAIT_SIZE
             elif state == AWAIT_SIZE:
-                frame.size = int.from_bytes(out, 'little')
+                # frame.size = int.from_bytes(out, 'little')
+                if frame.type == IMAGE_FRAME:
+                    frame.size = 640
+                else:
+                    frame.size = int.from_bytes(out, 'little')
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
                 current += 1
                 frame.payload += out
+                if frame.type == IMAGE_FRAME:
+                    print(f"Current {current}")
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
-                        print('[EDDY]', frame.to_string(), end='')
+                        print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME:
                         print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
                         current_image += frame.payload
                     reset()
+            start_time = perf_counter()
     except asyncio.CancelledError:
-        pass
+        print('asyncio.CancelledError')
+    except Exception as e:
+        print(e)
 
 def resolve_command(arg2):
     command = 0
@@ -254,7 +265,10 @@ async def interactive_shell(serial):
                     elif params[1] == 'image_info':
                         print(f'[INFO] current image length: {len(current_image)}')
                     elif params[1] == 'show_image':
-                        print("[INFO] image: ", current_image)
+                        if len(current_image) != 640 * 480:
+                            print("[INFO] image missing bytes")
+                        img = Image.frombytes('L', (640, 480), current_image)
+                        img.show()
                         pass
                     else:
                         print("[INFO] Wrong command")
