@@ -84,6 +84,7 @@ class Frame():
     def to_string(self):
         return f'frame type {self.type}, with size: {self.size} and payload: {self.payload}'
 
+lines = []
 
 async def print_frames(serial):
     global current_image
@@ -127,14 +128,17 @@ async def print_frames(serial):
             elif state == AWAIT_PAYLOAD:
                 current += 1
                 frame.payload += out
-                if frame.type == IMAGE_FRAME:
-                    print(f"Current {current}")
+                # if frame.type == IMAGE_FRAME:
+                    # print(f"Current {current}")
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME:
                         print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
                         current_image += frame.payload
+                        with open('image.txt', 'a') as f:                            
+                            f.write(str([int(b) for b in frame.payload]))
+                            f.write('\n')
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:
@@ -301,6 +305,9 @@ async def app(port, baudrate):
 def main():
     # img = Image.frombytes('L', (3, 4), current_image)
     # img.show()
+    with open('image.txt', 'w') as f:                            
+        f.write('')
+
     port = input(f'Port (default: {DEFAULT_PORT}): ').strip() or DEFAULT_PORT
     baudrate = int(input(f'Baudrate (default: {DEFAULT_BAUDRATE}): ').strip() or DEFAULT_BAUDRATE)
     asyncio.run(app(port, baudrate))
