@@ -8,10 +8,10 @@ from PIL import Image
 
 current_image = b''
 
-DEFAULT_PORT = "COM24"
+DEFAULT_PORT = "/dev/cu.usbmodem1303"
 DEFAULT_BAUDRATE = 115200
 START_SYMBOL = b'\x12'
-FRAME_TIMEOUT = 0.1
+FRAME_TIMEOUT = 1
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
 
 
@@ -266,6 +266,8 @@ async def interactive_shell(serial):
                     if params[1] == 'clear_image':
                         current_image = b''
                         print('[INFO] current image cleared')
+                        with open('image.txt', 'w') as f:
+                            f.write('')
                     elif params[1] == 'image_info':
                         print(f'[INFO] current image length: {len(current_image)}')
                     elif params[1] == 'show_image':
@@ -273,6 +275,7 @@ async def interactive_shell(serial):
                             print("[INFO] image missing bytes")
                         img = Image.frombytes('L', (640, 480), current_image)
                         img.show()
+                        img.save("image.png")
                         pass
                     else:
                         print("[INFO] Wrong command")
