@@ -1,6 +1,8 @@
 from enum import Enum, IntEnum
 from utils import ArgTypeMixin
 
+FRAME_START_SYMBOL = b'\x12'
+
 class CmrMode(ArgTypeMixin, Enum):
     SLEEP = 0 
     SD = 1

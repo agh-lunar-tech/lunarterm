@@ -2,6 +2,9 @@
 from enum import Enum
 import argparse
 
+def log(text):
+     print('[INFO] ' + text)
+
 class FakeQuit(Exception):
         pass
 

@@ -42,3 +42,19 @@ d_parser.add_argument('preview', type=PREVIEW_TYPE, choices=PREVIEW_VALUES)
 dl_parser = add_command_parser(cmr_subparsers, 'download_line', handle_cmr_download_line)
 dl_parser.add_argument('memory slot', type=MEMORY_SLOT_TYPE, choices=MEMORY_SLOT_VALUES)
 dl_parser.add_argument('line', type=IMAGE_LINE_TYPE)
+
+
+
+#### internal image command parser
+com_parser = add_command_parser(subparsers, 'image', None)
+com_subparsers = com_parser.add_subparsers(help='internal image commands', required=True)
+
+#show command
+add_command_parser(com_subparsers, 'show', handle_image_show)
+#clear_command
+add_command_parser(com_subparsers, 'clear', handle_image_clear)
+#save
+add_command_parser(com_subparsers, 'save', handle_image_save)
+
+
+add_command_parser(com_subparsers, 'info', handle_image_info)
