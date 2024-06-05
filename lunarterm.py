@@ -5,6 +5,9 @@ from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.shortcuts import PromptSession
 from time import perf_counter
 from PIL import Image
+from utils import FakeQuit
+from cli_parser import parser
+import argparse
 
 current_image = b''
 
@@ -250,75 +253,64 @@ def build_frame(mod_id, cmd_id, payload):
 
 async def interactive_shell(serial):
     global current_image
-    session = PromptSession("$ ")
+    session = PromptSession("> ")
     while True:
         try:
             inp = await session.prompt_async()
+            command_args = parser.parse_args(args=inp.split())
+            if 'func' in vars(command_args):
+                print(command_args.func(vars(command_args)))
+
             # serial.write(inp)
-            params = parse_input(inp)
-            if params:
-                # print('params:', params)
-                if params[0] == CMD_LOCAL:
-                    if params[1] == 'clear_image':
-                        current_image = b''
-                        print('[INFO] current image cleared')
-                    elif params[1] == 'image_info':
-                        print(f'[INFO] current image length: {len(current_image)}')
-                    elif params[1] == 'show_image':
-                        if len(current_image) != 640 * 480:
-                            print("[INFO] image missing bytes")
-                        img = Image.frombytes('L', (640, 480), current_image)
-                        img.show()
-                        pass
-                    else:
-                        print("[INFO] Wrong command")
-                else:
-                    for param in params[1]:
-                        if param:
-                            mod_id, cmd_id, payload = param
-                            frame = build_frame(mod_id, cmd_id, payload)
-                            # print("[INFO] sending frame")
-                            serial.write(frame)
-            else:
-                print("[INFO] Wrong command")
-        except (EOFError, KeyboardInterrupt):
+            # params = parse_input(inp)
+            # if params:
+            #     # print('params:', params)
+            #     if params[0] == CMD_LOCAL:
+            #         if params[1] == 'clear_image':
+            #             current_image = b''
+            #             print('[INFO] current image cleared')
+            #         elif params[1] == 'image_info':
+            #             print(f'[INFO] current image length: {len(current_image)}')
+            #         elif params[1] == 'show_image':
+            #             if len(current_image) != 640 * 480:
+            #                 print("[INFO] image missing bytes")
+            #             img = Image.frombytes('L', (640, 480), current_image)
+            #             img.show()
+            #             pass
+            #         else:
+            #             print("[INFO] Wrong command")
+            #     else:
+            #         for param in params[1]:
+            #             if param:
+            #                 mod_id, cmd_id, payload = param
+            #                 frame = build_frame(mod_id, cmd_id, payload)
+            #                 # print("[INFO] sending frame")
+            #                 serial.write(frame)
+            # else:
+            #     print("[INFO] Wrong command")
+        except (EOFError, KeyboardInterrupt, argparse.ArgumentError):
             return
+        except FakeQuit:
+            pass
 
 
 async def app(port, baudrate):
-    serial_port = serial.Serial(port=port, baudrate=baudrate, bytesize=8, stopbits=serial.STOPBITS_ONE)
-    print_func = print_frames
+    # serial_port = serial.Serial(port=port, baudrate=baudrate, bytesize=8, stopbits=serial.STOPBITS_ONE)
+    # print_func = print_frames
     
     with patch_stdout():
-        background_task = asyncio.create_task(print_func(serial_port))
+        # background_task = asyncio.create_task(print_func(serial_port))
         try:
-            await interactive_shell(serial_port)
-            # await interactive_shell(None)
+            # await interactive_shell(serial_port)
+            await interactive_shell(None)
         finally:
-            background_task.cancel()
+            # background_task.cancel()
             pass
 
 def main():
-    # img = Image.frombytes('L', (3, 4), current_image)
-    # img.show()
     port = input(f'Port (default: {DEFAULT_PORT}): ').strip() or DEFAULT_PORT
     baudrate = int(input(f'Baudrate (default: {DEFAULT_BAUDRATE}): ').strip() or DEFAULT_BAUDRATE)
     asyncio.run(app(port, baudrate))
 
 if __name__ == "__main__":
     main()
-    # serial_port = serial.Serial(port='COM10', baudrate=115200, bytesize=8, stopbits=serial.STOPBITS_ONE)
-    # serial_port.write(b'x')
-    # image =b''
-
-    # while serial_port.in_waiting < 5:
-    #     pass
-
-    # out = serial_port.read(5)
-    # if out == b'XOXOX':
-    #     while serial_port.in_waiting == 0:
-    #         pass
-    #     while True:
-    #         out = serial_port.read(1)
-    #         image += out
-    #         print('image length: ', len(image))
