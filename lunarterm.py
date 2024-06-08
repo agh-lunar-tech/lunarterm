@@ -45,8 +45,7 @@ class Frame():
         self.payload = b''
 
     def to_string(self):
-        return f'frame type {self.type}, with size: {self.size} and payload: {self.payload}'
-
+        return self.payload.decode('utf-8')
 
 async def eddie_receive(serial):
     global current_image

@@ -21,34 +21,55 @@ IMAGE_LINE_VALUES = range(0, 481) #tmp
 PREVIEW_TYPE = int
 PREVIEW_VALUES = [0, 1]
 
+PART_TYPE = int
+PART_VAL = range(0, 30)
+
 class ModuleId(Enum):
     SEN = 0
-    PM_= 1
+    PM = 1
     MD = 2
     CMR = 3
     COM = 4
+    SUP = 5
 
 class CmdId(Enum):
-    IDLE = 0
-    ACC_INITIALIZATION = 1
-    START_ACC_CALIBRATION = 2
-    HATCH_OPENING_DETECTION = 3
-    SET_BAUD_RATE = 4
-    SET_CMR_MODE = 5
-    CAPTURE = 6
-    DOWNLOAD = 7
-    DOWNLOAD_LINE = 8
-    MOTOR_ENABLE = 9
-    STEP = 10
-    SHORT_PHASES = 11
-    STEP_PERIOD = 12
-    DIR = 13
-    SET_MODE = 14
-    PING = 15
-    SEND_IMAGE_FRAME = 16
-    CUT_THERMAL_KNIFE = 17
-    STOP_THERMAL_KNIFE = 18
-    MOTOR_POWER = 19
-    RAD_POWER = 20
-    CAM_POWER = 21
-    MRAM_POWER = 22
+    # /* General commands */
+    SUP_C_IDLE = 0
+
+    # /* Sensors commands */
+    SEN_C_ACC_INITIALIZATION = 1
+    SEN_C_START_ACC_CALIBRATION = 2
+    SEN_C_HATCH_OPENING_DETECTION = 3
+
+    # /* Camera commands */
+    CMR_C_SET_BAUD_RATE = 4
+    CMR_C_SET_MODE = 5
+    CMR_C_CAPTURE = 6
+    CMR_C_DOWNLOAD = 7
+    CMR_C_DOWNLOAD_LINE = 8
+
+    # /*motor driver commands*/
+    MD_C_MOTOR_ENABLE = 9
+    MD_C_STEP = 10
+    MD_C_SHORT_PHASES = 11
+    MD_C_STEP_PERIOD = 12
+    MD_C_DIR = 13
+    MD_C_SET_MODE = 14
+
+    # /* Communication commands */
+    COM_C_PING = 15
+    COM_C_SEND = 16
+    COM_C_SEND_IMAGE = 17
+
+    # /*power control commands*/
+    PM_C_CUT_THERMAL_KNIFE = 18
+    PM_C_STOP_THERMAL_KNIFE = 19
+    PM_C_MOTOR_POWER = 20
+    PM_C_RAD_POWER = 21
+    PM_C_CAM_POWER = 22
+    PM_C_MRAM_POWER = 23
+
+    MD_C_STEP_IGNORE_ENDSTOP = 24
+
+    SUP_C_TRIGGER_HAPPY_PATH = 25
+    SUP_C_RUN_PARTIAL_HAPPY_PATH = 26
