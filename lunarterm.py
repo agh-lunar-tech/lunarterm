@@ -9,7 +9,7 @@ from utils import FakeQuit
 from cli_parser import parser
 import argparse
 from common_config import * 
-from image import image_append_line, image_clear
+from image import eddie_image
 from utils import log
 
 DEFAULT_PORT = "COM24"
@@ -48,8 +48,6 @@ class Frame():
         return self.payload.decode('utf-8')
 
 async def eddie_receive(serial):
-    global current_image
-
     frame = None
     state = 0
     current = 0
@@ -94,8 +92,8 @@ async def eddie_receive(serial):
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME:
-                        print(f'[EDDY] got image frame. got {len(current_image)} bytes.')
-                        image_append_line(frame.payload)
+                        print(f'[EDDY] got image frame.')
+                        eddie_image.image_append_line(frame.payload)
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:

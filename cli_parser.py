@@ -103,7 +103,29 @@ add_command_parser(com_subparsers, 'send', handle_com_send)
 add_command_parser(com_subparsers, 'send_image_frame', handle_com_send_image_frame)
 ##############################################################################
 
+#### pm command parser
+pm_parser = add_command_parser(send_subparsers, 'pm', None)
+pm_subparsers = pm_parser.add_subparsers(help='Power module commands', required=True)
 
+#motor power command
+mp_parser = add_command_parser(pm_subparsers, 'motor_power', handle_pm_motor_power)
+mp_parser.add_argument('power', type=POWER_TYPE)
+#rad power command
+rad_parser = add_command_parser(pm_subparsers, 'rad_power', handle_pm_rad_power)
+rad_parser.add_argument('power', type=POWER_TYPE)
+#cam power command
+cam_power_parser = add_command_parser(pm_subparsers, 'cam_power', handle_pm_camera_power)
+cam_power_parser.add_argument('power', type=POWER_TYPE)
+#mram power command
+mram_parser = add_command_parser(pm_subparsers, 'mram_power', handle_pm_mram_power)
+mram_parser.add_argument('power', type=POWER_TYPE)
+#cut thermal knife command
+cut_tk_parser = add_command_parser(pm_subparsers, 'cut_thermal', handle_pm_cut_thermal_knife)
+cut_tk_parser.add_argument('id', type=RESISTOR_ID_TYPE)
+#stop thermal knife command
+stop_tk_parser = add_command_parser(pm_subparsers, 'stop_thermal', handle_pm_stop_thermal_knife)
+stop_tk_parser.add_argument('id', type=RESISTOR_ID_TYPE)
+##############################################################################
 
 #### internal image command parser
 com_parser = add_command_parser(subparsers, 'image', None)

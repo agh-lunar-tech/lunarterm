@@ -43,6 +43,10 @@ PERIOD_TYPE = int
 DIR_TYPE = int
 DIR_VALUES = [0, 1]
 
+POWER_TYPE = int
+
+RESISTOR_ID_TYPE = int
+
 class ModuleId(Enum):
     SEN = 0
     PM = 1
