@@ -40,21 +40,6 @@ p_parser = add_command_parser(sen_subparsers, 'hatch_open_detect', handle_sen_ha
 p_parser.add_argument('detect', type=DETECT_TYPE, choices=DETECT_VALUES)
 ##############################################################################
 
-
-
-#### communication command parser
-com_parser = add_command_parser(send_subparsers, 'com', None)
-com_subparsers = com_parser.add_subparsers(help='Com commands', required=True)
-
-#ping command
-add_command_parser(com_subparsers, 'ping', handle_com_ping)
-#send command
-add_command_parser(com_subparsers, 'send', handle_com_send)
-#send_image_command
-add_command_parser(com_subparsers, 'send_image_frame', handle_com_send_image_frame)
-##############################################################################
-
-
 #### camera command parser
 cmr_parser = add_command_parser(send_subparsers, 'cmr', None)
 cmr_subparsers = cmr_parser.add_subparsers(help='Cmr commands', required=True)
@@ -76,6 +61,46 @@ d_parser.add_argument('preview', type=PREVIEW_TYPE, choices=PREVIEW_VALUES)
 dl_parser = add_command_parser(cmr_subparsers, 'download_line', handle_cmr_download_line)
 dl_parser.add_argument('memory slot', type=MEMORY_SLOT_TYPE, choices=MEMORY_SLOT_VALUES)
 dl_parser.add_argument('line', type=IMAGE_LINE_TYPE)
+##############################################################################
+
+
+#### md command parser
+md_parser = add_command_parser(send_subparsers, 'md', None)
+md_subparsers = md_parser.add_subparsers(help='Motor driver commands', required=True)
+
+#enable command
+en_parser = add_command_parser(md_subparsers, 'enable', handle_md_motor_enable)
+en_parser.add_argument('enable', type=ENABLE_TYPE, choices=ENABLE_VALUES)
+#set_mode_command
+step_parser = add_command_parser(md_subparsers, 'step', handle_md_step)
+step_parser.add_argument('steps', type=STEPS_TYPE)
+#short phases command
+short_p_parser = add_command_parser(md_subparsers, 'short_phases', handle_md_short_phases)
+#step period command
+step_p_parser = add_command_parser(md_subparsers, 'step_period', handle_md_step_period)
+step_p_parser.add_argument('period', type=PERIOD_TYPE)
+# dir command
+dir_parser = add_command_parser(md_subparsers, 'dir', handle_md_dir)
+dir_parser.add_argument('dir', type=DIR_TYPE, choices=DIR_VALUES)
+# set mode command
+md_sm_parser = add_command_parser(md_subparsers, 'set_mode', handle_md_set_mode)
+md_sm_parser.add_argument('mode', type=MDMode.argtype, choices=MDMode)
+# md step ignore endstop command
+md_ignore = add_command_parser(md_subparsers, 'ignore_endstop', handle_md_ignore_endstop)
+##############################################################################
+
+
+
+#### communication command parser
+com_parser = add_command_parser(send_subparsers, 'com', None)
+com_subparsers = com_parser.add_subparsers(help='Com commands', required=True)
+
+#ping command
+add_command_parser(com_subparsers, 'ping', handle_com_ping)
+#send command
+add_command_parser(com_subparsers, 'send', handle_com_send)
+#send_image_command
+add_command_parser(com_subparsers, 'send_image_frame', handle_com_send_image_frame)
 ##############################################################################
 
 

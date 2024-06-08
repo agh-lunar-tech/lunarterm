@@ -14,6 +14,20 @@ def handle_sup_idle(_, serial):
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SUP.value, 0, CmdId.SUP_C_IDLE.value)
     serial.write(f)
 
+def handle_sup_trigger_happy_path(args_d, serial):
+    log('Sending sup trigger happy path to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SUP.value, 0, CmdId.SUP_C_TRIGGER_HAPPY_PATH.value) 
+    serial.write(f)
+
+def handle_sup_run_partial(args_d, serial):
+    log('Sending sup run partial to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IBBHH', ModuleId.SUP.value, 
+                       args_d['start'],
+                       args_d['end'],
+                       0,
+                       CmdId.SUP_C_RUN_PARTIAL_HAPPY_PATH.value) 
+    serial.write(f)
+
 def handle_sen_acc_init(_, serial):
     log('Sending sen acc initialization to eddie.')
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_ACC_INITIALIZATION.value)
@@ -27,21 +41,6 @@ def handle_sen_start_acc_cali(_, serial):
 def handle_sen_hatch_opening(args_d, serial):
     log('Sending sen hatch opening detection to eddie.')
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, args_d['detect'], CmdId.SEN_C_HATCH_OPENING_DETECTION.value)
-    serial.write(f)
-
-def handle_com_ping(_, serial):
-    log('Sending com ping to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_PING.value)
-    serial.write(f)
-
-def handle_com_send(_, serial):
-    log('Sending com send to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND.value)
-    serial.write(f)
-
-def handle_com_send_image_frame(_, serial):
-    log('Sending com send_frame_image to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND_IMAGE.value)
     serial.write(f)
 
 def handle_cmr_set_baudrate(args_d, serial):
@@ -75,20 +74,62 @@ def handle_cmr_download_line(args_d, serial):
                        CmdId.CMR_C_DOWNLOAD_LINE.value) 
     serial.write(f)
 
-def handle_sup_trigger_happy_path(args_d, serial):
-    log('Sending sup trigger happy path to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SUP.value, 0, CmdId.SUP_C_TRIGGER_HAPPY_PATH.value) 
+
+def handle_md_motor_enable(args_d, serial):
+    log('Sending md motor enable to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['enable'], CmdId.MD_C_MOTOR_ENABLE.value)
     serial.write(f)
 
-def handle_sup_run_partial(args_d, serial):
-    log('Sending sup run partial to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IBBHH', ModuleId.SUP.value, 
-                       args_d['start'],
-                       args_d['end'],
-                       0,
-                       CmdId.SUP_C_RUN_PARTIAL_HAPPY_PATH.value) 
+def handle_md_step(args_d, serial):
+    log('Sending md step to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['steps'], CmdId.MD_C_STEP.value)
     serial.write(f)
 
+def handle_md_short_phases(args_d, serial):
+    log('Sending md short phases to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['phases'], CmdId.MD_C_SHORT_PHASES.value)
+    serial.write(f)
+
+def handle_md_short_phases(args_d, serial):
+    log('Sending md short phases to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, 0, CmdId.MD_C_SHORT_PHASES.value)
+    serial.write(f)
+
+def handle_md_step_period(args_d, serial):
+    log('Sending md step period to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['period'], CmdId.MD_C_STEP_PERIOD.value)
+    serial.write(f)
+
+def handle_md_dir(args_d, serial):
+    log('Sending md dir period to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['dir'], CmdId.MD_C_DIR.value)
+    serial.write(f)
+
+def handle_md_set_mode(args_d, serial):
+    log('Sending md set mode to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['mode'].value, CmdId.MD_C_SET_MODE.value)
+    serial.write(f)
+
+def handle_md_ignore_endstop(args_d, serial):
+    log('Sending md ignore endstop to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, 0, CmdId.MD_C_STEP_IGNORE_ENDSTOP.value)
+    serial.write(f)
+
+
+def handle_com_ping(_, serial):
+    log('Sending com ping to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_PING.value)
+    serial.write(f)
+
+def handle_com_send(_, serial):
+    log('Sending com send to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND.value)
+    serial.write(f)
+
+def handle_com_send_image_frame(_, serial):
+    log('Sending com send_frame_image to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND_IMAGE.value)
+    serial.write(f)
 
 
 def handle_image_clear(args_d, serial):

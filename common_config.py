@@ -12,6 +12,12 @@ class Baudrate(ArgTypeMixin, IntEnum):
     BR9600 = 0
     BR115200 = 1
 
+class MDMode(ArgTypeMixin, Enum):
+    FULLSTEP = 0 
+    HALFSTEP_FAST = 1
+    HALFSTEP_SLOW = 2
+
+
 MEMORY_SLOT_TYPE = int
 MEMORY_SLOT_VALUES = [0, 1, 2, 3]
 
@@ -26,6 +32,16 @@ PART_VAL = range(0, 30)
 
 DETECT_TYPE = int
 DETECT_VALUES = [0, 1]
+
+ENABLE_TYPE = int
+ENABLE_VALUES = [0, 1]
+
+STEPS_TYPE = int
+
+PERIOD_TYPE = int
+
+DIR_TYPE = int
+DIR_VALUES = [0, 1]
 
 class ModuleId(Enum):
     SEN = 0
