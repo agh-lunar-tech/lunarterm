@@ -15,12 +15,29 @@ send_subparsers = send_parser.add_subparsers(help='Eddie modules', required=True
 sup_parser = add_command_parser(send_subparsers, 'sup', None)
 sup_subparsers = sup_parser.add_subparsers(help='Supervisor commands', required=True)
 
-#ping command
+
+#idle command
+add_command_parser(sup_subparsers, 'idle', handle_sup_idle)
+#trigger happy path
 add_command_parser(sup_subparsers, 'trigger', handle_sup_trigger_happy_path)
-#send_image_command
+#run happy path part
 p_parser = add_command_parser(sup_subparsers, 'part', handle_sup_run_partial)
 p_parser.add_argument('start', type=PART_TYPE)
 p_parser.add_argument('end', type=PART_TYPE)
+##############################################################################
+
+#### sensors command parser
+sen_parser = add_command_parser(send_subparsers, 'sen', None)
+sen_subparsers = sen_parser.add_subparsers(help='Sensor commands', required=True)
+
+
+#acc init command
+add_command_parser(sen_subparsers, 'acc_init', handle_sen_acc_init)
+#start acc calibration command
+add_command_parser(sen_subparsers, 'acc_cali', handle_sen_start_acc_cali)
+#hatch open detection command
+p_parser = add_command_parser(sen_subparsers, 'hatch_open_detect', handle_sen_hatch_opening)
+p_parser.add_argument('detect', type=DETECT_TYPE, choices=DETECT_VALUES)
 ##############################################################################
 
 
@@ -31,6 +48,8 @@ com_subparsers = com_parser.add_subparsers(help='Com commands', required=True)
 
 #ping command
 add_command_parser(com_subparsers, 'ping', handle_com_ping)
+#send command
+add_command_parser(com_subparsers, 'send', handle_com_send)
 #send_image_command
 add_command_parser(com_subparsers, 'send_image_frame', handle_com_send_image_frame)
 ##############################################################################

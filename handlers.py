@@ -9,9 +9,34 @@ from image import image_clear, image_save, image_show, image_info
 # payload - 4 bytes
 # cmd id - 2 bytes
 
+def handle_sup_idle(_, serial):
+    log('Sending sup idle to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SUP.value, 0, CmdId.SUP_C_IDLE.value)
+    serial.write(f)
+
+def handle_sen_acc_init(_, serial):
+    log('Sending sen acc initialization to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_ACC_INITIALIZATION.value)
+    serial.write(f)
+
+def handle_sen_start_acc_cali(_, serial):
+    log('Sending sen start acc calibration to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_START_ACC_CALIBRATION.value)
+    serial.write(f)
+
+def handle_sen_hatch_opening(args_d, serial):
+    log('Sending sen hatch opening detection to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, args_d['detect'], CmdId.SEN_C_HATCH_OPENING_DETECTION.value)
+    serial.write(f)
+
 def handle_com_ping(_, serial):
     log('Sending com ping to eddie.')
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_PING.value)
+    serial.write(f)
+
+def handle_com_send(_, serial):
+    log('Sending com send to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND.value)
     serial.write(f)
 
 def handle_com_send_image_frame(_, serial):

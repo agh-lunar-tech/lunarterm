@@ -24,6 +24,9 @@ PREVIEW_VALUES = [0, 1]
 PART_TYPE = int
 PART_VAL = range(0, 30)
 
+DETECT_TYPE = int
+DETECT_VALUES = [0, 1]
+
 class ModuleId(Enum):
     SEN = 0
     PM = 1
