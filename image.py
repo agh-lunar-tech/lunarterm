@@ -7,23 +7,23 @@ class EddieImage():
         self.IMAGE_WIDTH = 640
         self.image_buffer = b''
 
-    def image_clear(self):
+    def clear(self):
         self.image_buffer = b''
 
-    def image_append_line(self, b):
+    def append_line(self, b):
         self.image_buffer += b
 
-    def image_info(self):
+    def info(self):
         return (self.IMAGE_WIDTH, len(self.image_buffer) // self.IMAGE_WIDTH)
 
-    def image_show(self):
+    def show(self):
         try:
             img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
             img.show()
         except ValueError:
             log('not enough image data')
 
-    def image_save(self, filename):
+    def save(self, filename):
         try:
             img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
             img.save(filename) 
