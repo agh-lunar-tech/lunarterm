@@ -92,8 +92,12 @@ async def eddie_receive(serial):
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME:
-                        print(f'[EDDY] got image frame.')
-                        eddie_image.image_append_line(frame.payload)
+                        eddie_image.append_line(frame.payload)
+                        if eddie_image.info()[1] == 480:
+                            log('got image from eddie')
+                            eddie_image.save('image.jpg')
+                            eddie_image.show()
+                            eddie_image.clear()
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:

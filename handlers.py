@@ -99,11 +99,6 @@ def handle_md_step(args_d, serial):
 
 def handle_md_short_phases(args_d, serial):
     log('Sending md short phases to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, args_d['phases'], CmdId.MD_C_SHORT_PHASES.value)
-    serial.write(f)
-
-def handle_md_short_phases(args_d, serial):
-    log('Sending md short phases to eddie.')
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.MD.value, 0, CmdId.MD_C_SHORT_PHASES.value)
     serial.write(f)
 
@@ -181,18 +176,18 @@ def handle_pm_stop_thermal_knife(args_d, serial):
 
 def handle_image_clear(args_d, serial):
     log('clearing image.')
-    eddie_image.image_clear()
+    eddie_image.clear()
 
 def handle_image_show(args_d, serial):
     log('showing image.')
-    eddie_image.image_show()
+    eddie_image.show()
 
 def handle_image_save(args_d, serial):
     log('saving image.')
-    eddie_image.image_save('tmp.jpg')
+    eddie_image.save('tmp.jpg')
 
 def handle_image_info(args_d, serial):
-    width, height = eddie_image.image_info()
+    width, height = eddie_image.info()
     log(f'current image - width: {width}, height: {height}.')
 
 
