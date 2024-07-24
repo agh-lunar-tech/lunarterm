@@ -2,9 +2,9 @@ from PIL import Image
 from utils import log
 
 class EddieImage():
-    def __init__(self):
-        self.IMAGE_HEIGHT = 480
-        self.IMAGE_WIDTH = 640
+    def __init__(self, height, width):
+        self.IMAGE_HEIGHT = height
+        self.IMAGE_WIDTH = width
         self.image_buffer = b''
 
     def clear(self):
@@ -30,7 +30,7 @@ class EddieImage():
         except ValueError:
             log('not enough image data')
 
-eddie_image = EddieImage()
+eddie_image = EddieImage(48, 64)
     
 
 

@@ -56,43 +56,48 @@ class ModuleId(Enum):
     SUP = 5
 
 class CmdId(Enum):
-    # /* General commands */
     SUP_C_IDLE = 0
 
-    # /* Sensors commands */
-    SEN_C_ACC_INITIALIZATION = 1
-    SEN_C_START_ACC_CALIBRATION = 2
-    SEN_C_HATCH_OPENING_DETECTION = 3
-
-    # /* Camera commands */
     CMR_C_SET_BAUD_RATE = 4
     CMR_C_SET_MODE = 5
     CMR_C_CAPTURE = 6
     CMR_C_DOWNLOAD = 7
     CMR_C_DOWNLOAD_LINE = 8
 
-    # /*motor driver commands*/
-    MD_C_MOTOR_ENABLE = 9
-    MD_C_STEP = 10
-    MD_C_SHORT_PHASES = 11
-    MD_C_STEP_PERIOD = 12
-    MD_C_DIR = 13
-    MD_C_SET_MODE = 14
-
-    # /* Communication commands */
     COM_C_PING = 15
+
     COM_C_SEND = 16
-    COM_C_SEND_IMAGE = 17
 
-    # /*power control commands*/
-    PM_C_CUT_THERMAL_KNIFE = 18
-    PM_C_STOP_THERMAL_KNIFE = 19
-    PM_C_MOTOR_POWER = 20
-    PM_C_RAD_POWER = 21
-    PM_C_CAM_POWER = 22
-    PM_C_MRAM_POWER = 23
+    PM_C_CUT_THERMAL_KNIFE = 17
+    PM_C_STOP_THERMAL_KNIFE = 18
+    PM_C_RAD_POWER = 20
+    PM_C_CAM_POWER = 21
+    PM_C_MRAM_POWER = 22
+    PM_C_TURN_ON_LED = 23
+    PM_C_TURN_OFF_LED = 24
 
-    MD_C_STEP_IGNORE_ENDSTOP = 24
+    SEN_C_ICM_INITIALIZATION = 81
+    SEN_C_MMC_INITIALIZATION = 82
+    SEN_C_RDN_INITIALIZATION = 83
+    SEN_C_GET_ALL = 84
+    SEN_C_GET_ICM = 85
+    SEN_C_GET_MMC = 86
+    SEN_C_GET_RDN = 87
+    SEN_C_GET_ENC = 88
+    SEN_C_GET_ENDSTOPS = 89
 
-    SUP_C_TRIGGER_HAPPY_PATH = 25
-    SUP_C_RUN_PARTIAL_HAPPY_PATH = 26
+    MD_C_ENABLE = 120
+    MD_C_STEPS = 121
+    MD_C_ON_INF = 122
+    MD_C_SET_SPEED = 123
+    MD_C_SET_DIR = 124
+    MD_C_STOP = 125
+    MD_C_OFF = 126
+
+    MD_C_STEP_IGNORE_ENDSTOP = 23
+
+    SUP_C_TRIGGER_HAPPY_PATH = 24
+    SUP_C_RUN_PARTIAL_HAPPY_PATH = 25
+
+    COM_C_SEND_IMAGE = 26
+    CMR_C_SET_EXPOSURE = 27

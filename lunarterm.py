@@ -37,6 +37,7 @@ AWAIT_PAYLOAD = 3
 
 TEXT_FRAME = b'\x00'
 IMAGE_FRAME = b'\x01'
+IMAGE_PREV_FRAME = b'\x02'
 
 class Frame():
     def __init__(self):
@@ -80,6 +81,8 @@ async def eddie_receive(serial):
             elif state == AWAIT_SIZE:
                 if frame.type == IMAGE_FRAME:
                     frame.size = 640
+                elif frame.type == IMAGE_PREV_FRAME:
+                    frame.size = 64
                 else:
                     frame.size = int.from_bytes(out, 'little')
                 state = AWAIT_PAYLOAD
@@ -91,9 +94,9 @@ async def eddie_receive(serial):
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
-                    elif frame.type == IMAGE_FRAME:
+                    elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
                         eddie_image.append_line(frame.payload)
-                        if eddie_image.info()[1] == 480:
+                        if eddie_image.info()[1] == 48:
                             log('got image from eddie')
                             eddie_image.save('image.jpg')
                             eddie_image.show()
