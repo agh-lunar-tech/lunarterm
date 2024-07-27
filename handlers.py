@@ -139,6 +139,11 @@ def handle_com_send_image_frame(_, serial):
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND_IMAGE.value)
     serial.write(f)
 
+def handle_com_send_error(_, serial):
+    log('Sending com send_error to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.COM.value, 0, CmdId.COM_C_SEND_ERROR.value)
+    serial.write(f)
+    
 ### power module handlers
 
 def handle_pm_motor_power(args_d, serial):

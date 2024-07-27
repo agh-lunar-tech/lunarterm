@@ -23,22 +23,6 @@ AWAIT_TYPE = 1
 AWAIT_SIZE = 2
 AWAIT_PAYLOAD = 3
 
-# (TODO add sequence of commands to send)
-# macros_dict = {
-#     "prep_mot" : [(MD_ID, MOTOR_ENABLE, 1), 
-#                   (MD_ID, DIR, 1), 
-#                   (MD_ID, STEP_PERIOD, 10), 
-#                   (MD_ID, SET_MODE, 2),
-#                   (PM_ID, MOTOR_POWER, 1)],
-    
-#     "deprep_mot" : [(MD_ID, MOTOR_ENABLE, 0),
-#                     (PM_ID, MOTOR_POWER, 0)]
-# }
-
-TEXT_FRAME = b'\x00'
-IMAGE_FRAME = b'\x01'
-IMAGE_PREV_FRAME = b'\x02'
-
 class Frame():
     def __init__(self):
         self.type = None
@@ -59,7 +43,6 @@ async def eddie_receive(serial):
         current = 0
         frame = None
         start_time = 0
-    
     reset()
     try:
         while True:
@@ -77,30 +60,28 @@ async def eddie_receive(serial):
             elif state == AWAIT_TYPE:
                 frame = Frame()
                 frame.type = out
-                state = AWAIT_SIZE
-            elif state == AWAIT_SIZE:
-                if frame.type == IMAGE_FRAME:
-                    frame.size = 640
-                elif frame.type == IMAGE_PREV_FRAME:
-                    frame.size = 64
-                else:
-                    frame.size = int.from_bytes(out, 'little')
+                frame.size = frame_sizes[frame.type]
+                if frame.type == IMAGE_FRAME and not eddie_image.receiving:
+                    eddie_image.init_image_receive(480, 640)
+                elif frame.type == IMAGE_PREV_FRAME and not eddie_image.receiving:
+                    eddie_image.init_image_receive(48, 64)
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
                 current += 1
                 frame.payload += out
-                # if frame.type == IMAGE_FRAME:
-                #     log(f"Current {current}")
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
                         eddie_image.append_line(frame.payload)
-                        if eddie_image.info()[1] == 48:
+                        if eddie_image.got_entire_image():
                             log('got image from eddie')
                             eddie_image.save('image.jpg')
                             eddie_image.show()
                             eddie_image.clear()
+                    elif frame.type == ERROR_FRAME:
+                        last_command, last_feedback = struct.unpack('HH', frame.payload)
+                        print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:

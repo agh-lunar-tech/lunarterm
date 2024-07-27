@@ -101,6 +101,8 @@ add_command_parser(com_subparsers, 'ping', handle_com_ping)
 add_command_parser(com_subparsers, 'send', handle_com_send)
 #send_image_command
 add_command_parser(com_subparsers, 'send_image_frame', handle_com_send_image_frame)
+#send_error_command
+add_command_parser(com_subparsers, 'send_error', handle_com_send_error)
 ##############################################################################
 
 #### pm command parser
