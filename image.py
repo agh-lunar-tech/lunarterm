@@ -2,13 +2,15 @@ from PIL import Image
 from utils import log
 
 class EddieImage():
-    def __init__(self, height, width):
-        self.IMAGE_HEIGHT = height
-        self.IMAGE_WIDTH = width
+    def __init__(self):
+        self.IMAGE_HEIGHT = -1
+        self.IMAGE_WIDTH = -1
         self.image_buffer = b''
+        self.receiving = False
 
     def clear(self):
         self.image_buffer = b''
+        self.receiving = False
 
     def append_line(self, b):
         self.image_buffer += b
@@ -30,7 +32,18 @@ class EddieImage():
         except ValueError:
             log('not enough image data')
 
-eddie_image = EddieImage(48, 64)
+    def init_image_receive(self, height, width):
+        self.IMAGE_HEIGHT = height
+        self.IMAGE_WIDTH = width
+        self.image_buffer = b''
+        self.receiving = True
+
+    def got_entire_image(self):
+        _, height = self.info()
+        return height == self.IMAGE_HEIGHT 
+
+
+eddie_image = EddieImage()
     
 
 
