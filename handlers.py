@@ -35,21 +35,25 @@ def handle_sup_run_partial(args_d, serial):
 ### sensor handlers
 
 
-def handle_sen_acc_init(_, serial):
-    log('Sending sen acc initialization to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_ACC_INITIALIZATION.value)
+def handle_sen_icm_init(_, serial):
+    log('Sending sen init icm initialization to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_ICM_INITIALIZATION.value)
     serial.write(f)
 
-def handle_sen_start_acc_cali(_, serial):
-    log('Sending sen start acc calibration to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_START_ACC_CALIBRATION.value)
+def handle_sen_mmc_init(_, serial):
+    log('Sending sen init mmc initialization to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_MMC_INITIALIZATION.value)
     serial.write(f)
 
-def handle_sen_hatch_opening(args_d, serial):
-    log('Sending sen hatch opening detection to eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, args_d['detect'], CmdId.SEN_C_HATCH_OPENING_DETECTION.value)
+def handle_sen_rdn_init(_, serial):
+    log('Sending sen init rdn initialization to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_RDN_INITIALIZATION.value)
     serial.write(f)
 
+def handle_sen_get_all(_, serial):
+    log('Sending sen get all to eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_GET_ALL.value)
+    serial.write(f)
 
 ### camera handlers
 

@@ -32,12 +32,10 @@ sen_subparsers = sen_parser.add_subparsers(help='Sensor commands', required=True
 
 
 #acc init command
-add_command_parser(sen_subparsers, 'acc_init', handle_sen_acc_init)
-#start acc calibration command
-add_command_parser(sen_subparsers, 'acc_cali', handle_sen_start_acc_cali)
-#hatch open detection command
-p_parser = add_command_parser(sen_subparsers, 'hatch_open_detect', handle_sen_hatch_opening)
-p_parser.add_argument('detect', type=DETECT_TYPE, choices=DETECT_VALUES)
+add_command_parser(sen_subparsers, 'acc_init', handle_sen_icm_init)
+add_command_parser(sen_subparsers, 'mmc_init', handle_sen_mmc_init)
+add_command_parser(sen_subparsers, 'rdn_init', handle_sen_rdn_init)
+add_command_parser(sen_subparsers, 'get_all', handle_sen_get_all)
 ##############################################################################
 
 #### camera command parser
