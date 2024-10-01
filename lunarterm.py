@@ -30,7 +30,7 @@ class Frame():
         self.payload = b''
 
     def to_string(self):
-        return self.payload.decode('utf-8')
+        return self.payload.decode('utf-8', errors="ignore")
 
 async def eddie_receive(serial):
     frame = None
