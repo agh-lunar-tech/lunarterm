@@ -142,3 +142,38 @@ add_command_parser(com_subparsers, 'save', handle_image_save)
 #info
 add_command_parser(com_subparsers, 'info', handle_image_info)
 ##############################################################################
+
+
+##################################################################################
+#### internal image command parser
+show_parser = add_command_parser(subparsers, 'cmd', None)
+show_subparsers = show_parser.add_subparsers(help='trigger command for elec*nics team', required=True)
+
+def handle_conops(_, serial):
+    handle_sup_trigger_happy_path({}, serial)
+
+def handle_motor_up(_, serial):
+    args = {'start': 13, 'end': 19}
+    handle_sup_run_partial(args, serial)
+
+def handle_motor_down(_, serial):
+    args = {'start': 34, 'end': 47}
+    handle_sup_run_partial(args, serial)
+
+def handle_image_prev(_, serial):
+    args = {'start': 36, 'end': 47}
+    handle_sup_run_partial(args, serial)
+
+def handle_image_full(_, serial):
+    args = {'start': 19, 'end': 47}
+    handle_sup_run_partial(args, serial)
+
+def handle_idle(_, serial):
+    handle_sup_idle({}, serial)
+
+add_command_parser(show_subparsers, 'trigger_conops', handle_conops)
+add_command_parser(show_subparsers, 'motor_up', handle_motor_up)
+add_command_parser(show_subparsers, 'motor_down', handle_motor_down)
+add_command_parser(show_subparsers, 'image_preview', handle_image_prev)
+add_command_parser(show_subparsers, 'image_full', handle_image_full)
+add_command_parser(show_subparsers, 'idle', handle_idle)

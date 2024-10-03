@@ -17,6 +17,9 @@ class EddieImage():
 
     def info(self):
         return (self.IMAGE_WIDTH, len(self.image_buffer) // self.IMAGE_WIDTH)
+    
+    def info_percent(self):
+        return self.info()[1] / self.IMAGE_HEIGHT * 100 
 
     def show(self):
         try:

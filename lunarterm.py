@@ -37,8 +37,9 @@ async def eddie_receive(serial):
     state = 0
     current = 0
     start_time = 0
+    image_count = 0
     def reset():
-        nonlocal state, current, frame, start_time 
+        nonlocal state, current, frame, start_time
         state = AWAIT_START
         current = 0
         frame = None
@@ -74,9 +75,11 @@ async def eddie_receive(serial):
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
                         eddie_image.append_line(frame.payload)
+                        log(f'image loading: {eddie_image.info_percent():.2f}%')
                         if eddie_image.got_entire_image():
                             log('got image from eddie')
-                            eddie_image.save('image.jpg')
+                            eddie_image.save(f'images/image{image_count}.jpg')
+                            image_count += 1
                             eddie_image.show()
                             eddie_image.clear()
                     elif frame.type == ERROR_FRAME:
