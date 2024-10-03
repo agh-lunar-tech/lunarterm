@@ -108,7 +108,11 @@ async def interactive_shell(serial):
 
 
 async def app(port, baudrate):
-    serial_port = serial.Serial(port=port, baudrate=baudrate, bytesize=8, stopbits=serial.STOPBITS_ONE)
+    try:
+        serial_port = serial.Serial(port=port, baudrate=baudrate, bytesize=8, stopbits=serial.STOPBITS_ONE)
+    except Exception:
+        log('Wrong serial parameters')
+        return
     with patch_stdout():
         background_task = asyncio.create_task(eddie_receive(serial_port))
         try:
