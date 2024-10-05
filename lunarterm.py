@@ -78,7 +78,7 @@ async def eddie_receive(serial):
                         log(f'image loading: {eddie_image.info_percent():.2f}%')
                         if eddie_image.got_entire_image():
                             log('got image from eddie')
-                            eddie_image.save(f'images/image{image_count}.jpg')
+                            eddie_image.save(f'images/image{image_count}.bmp')
                             image_count += 1
                             eddie_image.show()
                             eddie_image.clear()
