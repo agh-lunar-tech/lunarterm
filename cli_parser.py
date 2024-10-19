@@ -15,7 +15,6 @@ send_subparsers = send_parser.add_subparsers(help='Eddie modules', required=True
 sup_parser = add_command_parser(send_subparsers, 'sup', None)
 sup_subparsers = sup_parser.add_subparsers(help='Supervisor commands', required=True)
 
-
 #idle command
 add_command_parser(sup_subparsers, 'idle', handle_sup_idle)
 #trigger happy path

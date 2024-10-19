@@ -53,20 +53,28 @@ async def eddie_receive(serial):
                     reset()
                 await asyncio.sleep(0.001)
             out = serial.read(1)
+            # print('got: ', out)
             if state == AWAIT_START:
                 if out == FRAME_START_SYMBOL:
                     state = AWAIT_TYPE
                 else:
                     reset()
             elif state == AWAIT_TYPE:
+                # print('[INFO] awaiting type')
                 frame = Frame()
                 frame.type = out
                 frame.size = frame_sizes[frame.type]
                 if frame.type == IMAGE_FRAME and not eddie_image.receiving:
+                    # print('[INFO] got image frame')
                     eddie_image.init_image_receive(480, 640)
                 elif frame.type == IMAGE_PREV_FRAME and not eddie_image.receiving:
+                    # print('[INFO] wtffff')
                     eddie_image.init_image_receive(48, 64)
+                    # print('[INFO] got compressed')
+                # else:
+                    # print('[INFO] got text frame')
                 state = AWAIT_PAYLOAD
+                print('[INFO] awaiting type')
             elif state == AWAIT_PAYLOAD:
                 current += 1
                 frame.payload += out
@@ -78,10 +86,14 @@ async def eddie_receive(serial):
                         log(f'image loading: {eddie_image.info_percent():.2f}%')
                         if eddie_image.got_entire_image():
                             log('got image from eddie')
-                            eddie_image.save(f'images/image{image_count}.bmp')
+                            eddie_image.save(f'images/image{image_count}')
                             image_count += 1
                             eddie_image.show()
                             eddie_image.clear()
+                    elif frame.type == CPS_IMG_FRAME:
+                        print('[INFO] got cps data')
+                        eddie_image.cps_data += frame.payload
+                        print('[INFO] got cps data: ', len(eddie_image.cps_data))
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie

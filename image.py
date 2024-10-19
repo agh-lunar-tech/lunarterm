@@ -89,10 +89,13 @@ class EddieImage():
         self.IMAGE_WIDTH = -1
         self.image_buffer = b''
         self.receiving = False
+        self.cps_data = b''
 
     def clear(self):
         self.image_buffer = b''
         self.receiving = False
+
+        self.cps_data = b''
 
     def append_line(self, b):
         self.image_buffer += b
@@ -113,9 +116,13 @@ class EddieImage():
     def save(self, filename):
         try:
             img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
-            img.save(filename) 
-        except ValueError:
+            img.save(filename + '.bmp') 
+        except Exception:
             log('not enough image data')
+
+        print('saving image')
+        with open(filename + 'compressed', 'wb') as file:
+          file.write(self.cps_data[:1544]) #tmporary
 
     def init_image_receive(self, height, width):
         self.IMAGE_HEIGHT = height
@@ -131,21 +138,21 @@ class EddieImage():
 eddie_image = EddieImage()
     
 
-filename = 'images/image0.bmp'
-im = cv2.imread(filename, 0) #image must be 24bit. 8bit image causes error message
-image = cv2.cvtColor(im, cv2.COLOR_BayerGR2RGB)
-cv2.imwrite('images/image1.bmp', image)
-filename = filename.split('.')
-colour_filename = filename[0] + '_colour.bmp'
+# filename = 'images/image0.bmp'
+# im = cv2.imread(filename, 0) #image must be 24bit. 8bit image causes error message
+# image = cv2.cvtColor(im, cv2.COLOR_BayerGR2RGB)
+# cv2.imwrite('images/image1.bmp', image)
+# filename = filename.split('.')
+# colour_filename = filename[0] + '_colour.bmp'
 
-image = scale_chn(image, 'r', 5)
-image = scale_chn(image, 'g', 3)
-image = scale_chn(image, 'b', 1)
-image = simplest_cb(image,0.25)
-image = apply_clahe(image)
+# image = scale_chn(image, 'r', 5)
+# image = scale_chn(image, 'g', 3)
+# image = scale_chn(image, 'b', 1)
+# image = simplest_cb(image,0.25)
+# image = apply_clahe(image)
 
 
-cv2.imwrite('images/image0_color_adjusted.bmp', image)
+# cv2.imwrite('images/image0_color_adjusted.bmp', image)
 
 
 
