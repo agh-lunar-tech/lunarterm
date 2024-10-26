@@ -38,12 +38,14 @@ async def eddie_receive(serial):
     current = 0
     start_time = 0
     image_count = 0
+    current_offset = 0
     def reset():
         nonlocal state, current, frame, start_time
         state = AWAIT_START
         current = 0
         frame = None
         start_time = 0
+        current_offset = 0
     reset()
     try:
         while True:
@@ -74,9 +76,12 @@ async def eddie_receive(serial):
                 # else:
                     # print('[INFO] got text frame')
                 state = AWAIT_PAYLOAD
-                print('[INFO] awaiting type')
+                print('[INFO] got type: ', frame.type)
+                print('[INFO] got size: ', frame.size)
             elif state == AWAIT_PAYLOAD:
                 current += 1
+                # print('current: ', current)
+                # print('ading to paylaod')
                 frame.payload += out
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
@@ -92,11 +97,20 @@ async def eddie_receive(serial):
                             eddie_image.clear()
                     elif frame.type == CPS_IMG_FRAME:
                         print('[INFO] got cps data')
-                        eddie_image.cps_data += frame.payload
-                        print('[INFO] got cps data: ', len(eddie_image.cps_data))
+                        for b in frame.payload:
+                            if current_offset >= len(eddie_image.image_buffer):
+                                eddie_image.save(f'images/{image_count}')
+                                break
+                            eddie_image.image_buffer[current_offset] = b
+                            current_offset += 1
+                        print('[INFO] got cps data: ', len(eddie_image.image_buffer))
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
+                    elif frame.type == IMG_INIT_FRAME:
+                        image_type, image_size = struct.unpack('=BI', frame.payload)
+                        eddie_image.init_image_compressed(image_type, image_size)
+                        print("GOT IMAGE INIT type: ", image_type, " size: ", image_size)
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:

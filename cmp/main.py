@@ -8,7 +8,7 @@ import utils
 
 
 if __name__=="__main__": 
-    bsq = utils.read_BSQ_from_bin(Path("dec00.bin"), 4, 24, 32)
+    bsq = utils.read_BSQ_from_bin(Path("uncompressed"), 4, 24, 32)
     decompressed = utils.BSQ_to_mosaic(bsq)
     Image.fromarray(decompressed).show()   
 
