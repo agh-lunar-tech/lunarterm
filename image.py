@@ -4,6 +4,9 @@ import cv2
 import numpy as np
 import math
 from pathlib import Path
+import subprocess
+import cps_utils
+from common_config import ImageType
 
 # Mask for simplest color balance
 def apply_mask(matrix, mask, fill_value):
@@ -87,18 +90,20 @@ class EddieImage():
     def __init__(self):
         self.IMAGE_HEIGHT = -1
         self.IMAGE_WIDTH = -1
-        self.image_buffer = b''
+        self.image_buffer = None
         self.receiving = False
-        self.cps_data = b''
+        # self.cps_data = b''
+        self.image_type = -1
 
     def clear(self):
-        self.image_buffer = b''
+        self.image_buffer = None
         self.receiving = False
 
         self.cps_data = b''
 
     def append_line(self, b):
-        self.image_buffer += b
+        # self.image_buffer += b
+        self.image_buffer.extend(b)
 
     def info(self):
         return (self.IMAGE_WIDTH, len(self.image_buffer) // self.IMAGE_WIDTH)
@@ -114,22 +119,59 @@ class EddieImage():
             log('not enough image data')
 
     def save(self, filename):
+        if self.image_type == ImageType.COMP_PART or self.image_type == ImageType.COMP_FULL:
+          print('saving compressed size: ', len(self.image_buffer))
+          with open(filename + 'compressed', 'wb') as file:
+            file.write(self.image_buffer)
+          return
+        
         try:
             img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
             img.save(filename + '.bmp') 
         except Exception:
             log('not enough image data')
 
-        print('saving image')
-        with open(filename + 'compressed', 'wb') as file:
-          file.write(self.cps_data[:1544]) #tmporary
+    def decompress(self, filename):
+      print("[INFO] Decompressing image")
+      try:
+        result = subprocess.run(["decompressor.exe", filename + 'compressed', filename + 'decompressed', 'cps_config.txt'], capture_output=True, text=True)
+        print(f"H={self.IMAGE_HEIGHT/2}, W={self.IMAGE_WIDTH/2}")
+        bsq = cps_utils.read_BSQ_from_bin(Path(filename + 'decompressed'), 4, self.IMAGE_HEIGHT//2, self.IMAGE_WIDTH//2)
+        decompressed = cps_utils.BSQ_to_mosaic(bsq)
+        image = Image.fromarray(decompressed)
+        image.show()
+        image.save(filename + "decompressed.bmp")  
+      except Exception as ex:
+          print(f"[ERROR] Decompression error: {ex}")
+
 
     def init_image_receive(self, height, width):
         self.IMAGE_HEIGHT = height
         self.IMAGE_WIDTH = width
-        self.image_buffer = b''
+        self.image_buffer = bytearray()
         self.receiving = True
 
+    # def init_image_receive(self, image_type):
+    #     self.image_type = image_type
+    #     if image_type == ImageType.RAW_FULL:
+    #        self.image_buffer = bytearray(640 * 480)
+    #     elif image_type == ImageType.RAW_PART:
+    #        self.image_buffer = bytearray(64 * 48)
+    #     else:
+    #        print('wrong image type')
+    #     # self.IMAGE_HEIGHT = height
+    #     # self.IMAGE_WIDTH = width
+    #     # self.image_buffer = b''
+    #     self.receiving = True
+
+    def init_image_compressed(self, image_type, image_size):
+        self.image_type = image_type
+        if image_type == ImageType.COMP_FULL:
+           self.image_buffer = bytearray(image_size)
+        elif image_type == ImageType.COMP_PART:
+           self.image_buffer = bytearray(image_size)
+        self.receiving = True
+           
     def got_entire_image(self):
         _, height = self.info()
         return height == self.IMAGE_HEIGHT 
