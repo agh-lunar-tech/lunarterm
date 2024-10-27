@@ -76,8 +76,8 @@ async def eddie_receive(serial):
                 # else:
                     # print('[INFO] got text frame')
                 state = AWAIT_PAYLOAD
-                print('[INFO] got type: ', frame.type)
-                print('[INFO] got size: ', frame.size)
+                # print('[INFO] got type: ', frame.type)
+                # print('[INFO] got size: ', frame.size)
             elif state == AWAIT_PAYLOAD:
                 current += 1
                 # print('current: ', current)
@@ -96,14 +96,15 @@ async def eddie_receive(serial):
                             eddie_image.show()
                             eddie_image.clear()
                     elif frame.type == CPS_IMG_FRAME:
-                        print('[INFO] got cps data')
+                        #print('[INFO] got cps data')
+                        log(f'[INFO] binary data loading: {(100*current_offset / len(eddie_image.image_buffer)):.2f}%')
                         for b in frame.payload:
                             if current_offset >= len(eddie_image.image_buffer):
                                 eddie_image.save(f'images/{image_count}')
+                                eddie_image.decompress(f'images/{image_count}')
                                 break
                             eddie_image.image_buffer[current_offset] = b
                             current_offset += 1
-                        print('[INFO] got cps data: ', len(eddie_image.image_buffer))
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie

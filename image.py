@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import math
 from pathlib import Path
+import subprocess
+import cps_utils
 from common_config import ImageType
 
 # Mask for simplest color balance
@@ -128,6 +130,20 @@ class EddieImage():
             img.save(filename + '.bmp') 
         except Exception:
             log('not enough image data')
+
+    def decompress(self, filename):
+      print("[INFO] Decompressing image")
+      try:
+        result = subprocess.run(["decompressor.exe", filename + 'compressed', filename + 'decompressed', 'cps_config.txt'], capture_output=True, text=True)
+        print(f"H={self.IMAGE_HEIGHT/2}, W={self.IMAGE_WIDTH/2}")
+        bsq = cps_utils.read_BSQ_from_bin(Path(filename + 'decompressed'), 4, self.IMAGE_HEIGHT//2, self.IMAGE_WIDTH//2)
+        decompressed = cps_utils.BSQ_to_mosaic(bsq)
+        image = Image.fromarray(decompressed)
+        image.show()
+        image.save(filename + "decompressed.bmp")  
+      except Exception as ex:
+          print(f"[ERROR] Decompression error: {ex}")
+
 
     def init_image_receive(self, height, width):
         self.IMAGE_HEIGHT = height
