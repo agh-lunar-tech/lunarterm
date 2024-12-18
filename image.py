@@ -102,7 +102,6 @@ class EddieImage():
         self.cps_data = b''
 
     def append_line(self, b):
-        # self.image_buffer += b
         self.image_buffer.extend(b)
 
     def info(self):
@@ -134,7 +133,7 @@ class EddieImage():
     def decompress(self, filename):
       print("[INFO] Decompressing image")
       try:
-        result = subprocess.run(["decompressor.exe", filename + 'compressed', filename + 'decompressed', 'cps_config.txt'], capture_output=True, text=True)
+        result = subprocess.run(["./bin/decompressor", filename + 'compressed', filename + 'decompressed', 'cps_config.txt'])
         print(f"H={self.IMAGE_HEIGHT/2}, W={self.IMAGE_WIDTH/2}")
         bsq = cps_utils.read_BSQ_from_bin(Path(filename + 'decompressed'), 4, self.IMAGE_HEIGHT//2, self.IMAGE_WIDTH//2)
         decompressed = cps_utils.BSQ_to_mosaic(bsq)
@@ -150,26 +149,14 @@ class EddieImage():
         self.IMAGE_WIDTH = width
         self.image_buffer = bytearray()
         self.receiving = True
-
-    # def init_image_receive(self, image_type):
-    #     self.image_type = image_type
-    #     if image_type == ImageType.RAW_FULL:
-    #        self.image_buffer = bytearray(640 * 480)
-    #     elif image_type == ImageType.RAW_PART:
-    #        self.image_buffer = bytearray(64 * 48)
-    #     else:
-    #        print('wrong image type')
-    #     # self.IMAGE_HEIGHT = height
-    #     # self.IMAGE_WIDTH = width
-    #     # self.image_buffer = b''
-    #     self.receiving = True
-
     def init_image_compressed(self, image_type, image_size):
         self.image_type = image_type
         if image_type == ImageType.COMP_FULL:
            self.image_buffer = bytearray(image_size)
         elif image_type == ImageType.COMP_PART:
-           self.image_buffer = bytearray(image_size)
+          self.IMAGE_HEIGHT = 64
+          self.IMAGE_WIDTH = 48
+          self.image_buffer = bytearray(image_size)
         self.receiving = True
            
     def got_entire_image(self):
@@ -178,24 +165,6 @@ class EddieImage():
 
 
 eddie_image = EddieImage()
-    
-
-# filename = 'images/image0.bmp'
-# im = cv2.imread(filename, 0) #image must be 24bit. 8bit image causes error message
-# image = cv2.cvtColor(im, cv2.COLOR_BayerGR2RGB)
-# cv2.imwrite('images/image1.bmp', image)
-# filename = filename.split('.')
-# colour_filename = filename[0] + '_colour.bmp'
-
-# image = scale_chn(image, 'r', 5)
-# image = scale_chn(image, 'g', 3)
-# image = scale_chn(image, 'b', 1)
-# image = simplest_cb(image,0.25)
-# image = apply_clahe(image)
-
-
-# cv2.imwrite('images/image0_color_adjusted.bmp', image)
-
 
 
 

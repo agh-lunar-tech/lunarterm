@@ -55,60 +55,37 @@ async def eddie_receive(serial):
                     reset()
                 await asyncio.sleep(0.001)
             out = serial.read(1)
-            # print('got: ', out)
             if state == AWAIT_START:
                 if out == FRAME_START_SYMBOL:
                     state = AWAIT_TYPE
                 else:
                     reset()
             elif state == AWAIT_TYPE:
-                # print('[INFO] awaiting type')
                 frame = Frame()
                 frame.type = out
                 frame.size = frame_sizes[frame.type]
-                if frame.type == IMAGE_FRAME and not eddie_image.receiving:
-                    # print('[INFO] got image frame')
-                    eddie_image.init_image_receive(480, 640)
-                elif frame.type == IMAGE_PREV_FRAME and not eddie_image.receiving:
-                    # print('[INFO] wtffff')
-                    eddie_image.init_image_receive(48, 64)
-                    # print('[INFO] got compressed')
-                # else:
-                    # print('[INFO] got text frame')
                 state = AWAIT_PAYLOAD
-                # print('[INFO] got type: ', frame.type)
-                # print('[INFO] got size: ', frame.size)
             elif state == AWAIT_PAYLOAD:
                 current += 1
-                # print('current: ', current)
-                # print('ading to paylaod')
                 frame.payload += out
                 if current == frame.size:
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
-                    elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
-                        eddie_image.append_line(frame.payload)
-                        log(f'image loading: {eddie_image.info_percent():.2f}%')
-                        if eddie_image.got_entire_image():
-                            log('got image from eddie')
-                            eddie_image.save(f'images/image{image_count}')
-                            image_count += 1
-                            eddie_image.show()
-                            eddie_image.clear()
                     elif frame.type == CPS_IMG_FRAME:
-                        #print('[INFO] got cps data')
-                        log(f'[INFO] binary data loading: {(100*current_offset / len(eddie_image.image_buffer)):.2f}%')
+                        log(f'binary data loading: {(100 * current_offset / len(eddie_image.image_buffer)):.2f}%')
                         for b in frame.payload:
-                            if current_offset >= len(eddie_image.image_buffer):
-                                eddie_image.save(f'images/{image_count}')
-                                eddie_image.decompress(f'images/{image_count}')
-                                break
                             eddie_image.image_buffer[current_offset] = b
                             current_offset += 1
+                            print("LEN: ", len(eddie_image.image_buffer), current_offset)
+                            if current_offset >= len(eddie_image.image_buffer):
+                                eddie_image.save(f'images/{image_count}')
+                                current_offset = 0
+                                break
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
                     elif frame.type == IMG_INIT_FRAME:
+                        eddie_image.clear()
                         image_type, image_size = struct.unpack('=BI', frame.payload)
                         eddie_image.init_image_compressed(image_type, image_size)
                         print("GOT IMAGE INIT type: ", image_type, " size: ", image_size)
@@ -118,6 +95,9 @@ async def eddie_receive(serial):
         print('asyncio.CancelledError')
     except Exception as e:
         print(e)
+
+def send_command(args):
+    print("sending args", args)
 
 async def interactive_shell(serial):
     global current_image
