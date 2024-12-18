@@ -50,9 +50,12 @@ def handle_sen_hatch_opening(args_d, serial):
     f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, args_d['detect'], CmdId.SEN_C_HATCH_OPENING_DETECTION.value)
     serial.write(f)
 
+def handle_sen_get_all(_,serial):
+    log('Sending sen get allto eddie.')
+    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_GET_ALL.value)
+    serial.write(f)
 
 ### camera handlers
-
 
 def handle_cmr_set_baudrate(args_d, serial):
     log('Sending cmr set_baudrate to eddie.')
