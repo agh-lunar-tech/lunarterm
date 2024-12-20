@@ -11,6 +11,7 @@ import argparse
 from common_config import * 
 from image import eddie_image
 from utils import log
+from procedure_state_enum import ProcedureState
 
 DEFAULT_PORT = "COM24"
 DEFAULT_BAUDRATE = 115200
@@ -85,6 +86,9 @@ async def eddie_receive(serial):
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
+                    elif frame.type == PROCEDURE_STATE_FRAME:
+                        procedure_state = struct.unpack('B', frame.payload)[0]
+                        print('[EDDY]', f'PROCEDURE_STATE -> procedure state : {ProcedureState(procedure_state).name}')
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:
