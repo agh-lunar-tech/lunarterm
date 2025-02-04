@@ -38,6 +38,9 @@ add_command_parser(sen_subparsers, 'acc_cali', handle_sen_start_acc_cali)
 #hatch open detection command
 p_parser = add_command_parser(sen_subparsers, 'hatch_open_detect', handle_sen_hatch_opening)
 p_parser.add_argument('detect', type=DETECT_TYPE, choices=DETECT_VALUES)
+
+add_command_parser(sen_subparsers, 'get_all', handle_sen_get_all)
+
 ##############################################################################
 
 #### camera command parser

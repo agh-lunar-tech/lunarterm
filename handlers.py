@@ -52,7 +52,12 @@ def handle_sen_hatch_opening(args_d, serial):
 
 def handle_sen_get_all(_,serial):
     log('Sending sen get allto eddie.')
-    f = FRAME_START_SYMBOL + struct.pack('IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_GET_ALL.value)
+    f = FRAME_START_SYMBOL + struct.pack('<IIH', ModuleId.SEN.value, 0, CmdId.SEN_C_GET_ALL.value)
+    # f = FRAME_START_SYMBOL + struct.pack('IBBHH', ModuleId.SUP.value, 
+    #                                     47,
+    #                                     48,
+    #                                     0,
+    #                                     CmdId.SUP_C_RUN_PARTIAL_HAPPY_PATH.value) 
     serial.write(f)
 
 ### camera handlers

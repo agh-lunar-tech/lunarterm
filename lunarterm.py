@@ -12,7 +12,7 @@ from common_config import *
 from image import eddie_image
 from utils import log
 
-DEFAULT_PORT = "COM24"
+DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUDRATE = 115200
 FRAME_TIMEOUT = 0.1
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
@@ -61,6 +61,7 @@ async def eddie_receive(serial):
             elif state == AWAIT_TYPE:
                 frame = Frame()
                 frame.type = out
+                print('xd', out)
                 frame.size = frame_sizes[frame.type]
                 if frame.type == IMAGE_FRAME and not eddie_image.receiving:
                     eddie_image.init_image_receive(480, 640)
@@ -82,6 +83,10 @@ async def eddie_receive(serial):
                             image_count += 1
                             eddie_image.show()
                             eddie_image.clear()
+                    elif frame.type == TELEMETRY_FRAME:
+                        print('[EDDY] - Telemetry frame')
+                        log('[EDDY] - Telemetry frame')
+
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
