@@ -11,6 +11,7 @@ import argparse
 from common_config import * 
 from image import eddie_image
 from utils import log
+import frames_proto/lunaris_downlink_pb2
 
 DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUDRATE = 115200
@@ -31,6 +32,17 @@ class Frame():
 
     def to_string(self):
         return self.payload.decode('utf-8', errors="ignore")
+
+    def pretty_print(self):
+        sensor_data = lunaris_downlink_pb2.SensorData()
+        sensor_data.ParseFromString(frame.payload)
+
+        print("Parsed Sensor Data:")
+        print(sensor_data)
+
+    def log(self):
+        pass
+
 
 async def eddie_receive(serial):
     frame = None
@@ -61,7 +73,6 @@ async def eddie_receive(serial):
             elif state == AWAIT_TYPE:
                 frame = Frame()
                 frame.type = out
-                print('xd', out)
                 frame.size = frame_sizes[frame.type]
                 if frame.type == IMAGE_FRAME and not eddie_image.receiving:
                     eddie_image.init_image_receive(480, 640)
@@ -69,6 +80,7 @@ async def eddie_receive(serial):
                     eddie_image.init_image_receive(48, 64)
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
+                print('xd', out)
                 current += 1
                 frame.payload += out
                 if current == frame.size:
@@ -84,8 +96,8 @@ async def eddie_receive(serial):
                             eddie_image.show()
                             eddie_image.clear()
                     elif frame.type == TELEMETRY_FRAME:
-                        print('[EDDY] - Telemetry frame')
-                        log('[EDDY] - Telemetry frame')
+                        print('[INFO] - Telemetry frame received')
+                        frame.pretty_print()
 
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)

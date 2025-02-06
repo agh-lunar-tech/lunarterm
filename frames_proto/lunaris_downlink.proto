@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package lunaris_downlink_frames;
+
+enum FrameType {
+    FT_DEBUG_LOG_FRAME = 0;
+    FT_IMAGE_FRAME = 1;
+    FT_IMAGE_PREV_FRAME = 2;
+    FT_ERROR_FRAME = 3;
+    FT_IMG_FRAME = 4;
+    FT_IMG_INIT_FRAME = 5;
+    FT_TELEMETRY_FRAME = 6;
+}
+
+
+// ============ TELEMETRY_FRAME ============
+
+message IMUAxisData {
+    int32 x = 1;
+    int32 y = 2;
+    int32 z = 3;
+}
+
+message MagAxisData {
+    int32 x = 1;
+    int32 y = 2;
+    int32 z = 3;
+}
+
+message SensorData {
+    IMUAxisData icm_gyr_data = 1;
+    IMUAxisData icm_acc_data = 2;
+    int32 icm_temp = 3;
+    MagAxisData mmc_mag_data = 4;
+    int32 mmc_temp = 5;
+    uint32 rdn_serial_dose = 6;
+    uint32 rdn_sen1_dose = 7;
+    uint32 rdn_sen2_dose = 8;
+    uint32 rdn_serial_intensity = 9;
+    uint32 rdn_sen1_intensity = 10;
+    uint32 rdn_sen2_intensity = 11;
+    int32 rdn_temp = 12;
+    int32 rdn_vdd = 13;
+    bool rdn_crystal_ok = 14;
+    bool rdn_analog_ok = 15;
+    uint32 encoder_sensor = 16;
+    uint32 hall_endstop = 17;
+    uint32 reflective_endstop = 18;
+    uint32 light_sensor = 19;
+}
+
+message TelemetryFrame {
+    FrameType frame_type = 1;
+    SensorData payload = 2;
+}
