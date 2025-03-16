@@ -11,7 +11,8 @@ import argparse
 from common_config import * 
 from image import eddie_image
 from utils import log
-import frames_proto/lunaris_downlink_pb2
+#import frames_proto/lunaris_downlink_pb2
+import socket
 
 DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUDRATE = 115200
@@ -50,6 +51,11 @@ async def eddie_receive(serial):
     current = 0
     start_time = 0
     image_count = 0
+
+    # Initializing UDP socket
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    UDP_TARGET = ("127.0.0.1", 10015)
+
     def reset():
         nonlocal state, current, frame, start_time
         state = AWAIT_START
@@ -84,6 +90,8 @@ async def eddie_receive(serial):
                 current += 1
                 frame.payload += out
                 if current == frame.size:
+                    # Send full frame (starting byte + type + payload) over UDP
+                    udp_socket.sendto(FRAME_START_SYMBOL+frame.type+frame.payload, UDP_TARGET)
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
                     elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
