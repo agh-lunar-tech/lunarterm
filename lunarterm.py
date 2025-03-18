@@ -13,6 +13,7 @@ from image import eddie_image
 from utils import log
 #import frames_proto/lunaris_downlink_pb2
 import socket
+import argparse
 
 DEFAULT_PORT = "/dev/ttyUSB0"
 DEFAULT_BAUDRATE = 115200
@@ -86,7 +87,7 @@ async def eddie_receive(serial):
                     eddie_image.init_image_receive(48, 64)
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
-                print('xd', out)
+                # print('xd', out)
                 current += 1
                 frame.payload += out
                 if current == frame.size:
@@ -147,9 +148,12 @@ async def app(port, baudrate):
             pass
 
 def main():
-    port = input(f'Port (default: {DEFAULT_PORT}): ').strip() or DEFAULT_PORT
-    baudrate = int(input(f'Baudrate (default: {DEFAULT_BAUDRATE}): ').strip() or DEFAULT_BAUDRATE)
-    asyncio.run(app(port, baudrate))
+    parser = argparse.ArgumentParser(description="Serial port communication")
+    parser.add_argument("-p", "--port", default=DEFAULT_PORT, help=f"Port (default: {DEFAULT_PORT})")
+    parser.add_argument("-b", "--baudrate", type=int, default=DEFAULT_BAUDRATE, help=f"Baudrate (default: {DEFAULT_BAUDRATE})")
+    args = parser.parse_args()
+    
+    asyncio.run(app(args.port, args.baudrate))
 
 if __name__ == "__main__":
     main()
