@@ -2,51 +2,37 @@ from PIL import Image
 from utils import log
 
 class EddieImage():
-    def __init__(self):
-        self.IMAGE_HEIGHT = -1
-        self.IMAGE_WIDTH = -1
-        self.image_buffer = b''
-        self.receiving = False
+    def __init__(self, id, type, is_compressed, slot, size, part_size):
+        self.id = id
+        self.type = type
+        self.is_compressed = is_compressed
+        self.slot = slot
+        self.image_buffer = [0 for _ in range(size)]
+        self.part_size = part_size
+        self.size = size
 
-    def clear(self):
-        self.image_buffer = b''
-        self.receiving = False
+    # data shoudl be part size len
+    def add_data(self, offset, data):
+        print('[INFO] adding data offset: ', offset, 'data_len:', len(data))
+        current_size = self.part_size
+        if offset + self.part_size > self.size:
+            current_size = self.size - offset
+            
+        for i in range(current_size):
+            self.image_buffer[offset + i] = data[i]
 
-    def append_line(self, b):
-        self.image_buffer += b
-
-    def info(self):
-        return (self.IMAGE_WIDTH, len(self.image_buffer) // self.IMAGE_WIDTH)
+    def get_image(self):
+        if self.type == 2:
+            return Image.frombytes('L', (64, 48), bytes(self.image_buffer))
+        return Image.frombytes('L', (640, 480), bytes(self.image_buffer))
     
-    def info_percent(self):
-        return self.info()[1] / self.IMAGE_HEIGHT * 100 
-
     def show(self):
-        try:
-            img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
-            img.show()
-        except ValueError:
-            log('not enough image data')
+        img = self.get_image()
+        img.show()
 
     def save(self, filename):
-        try:
-            img = Image.frombytes('L', (self.IMAGE_WIDTH, self.IMAGE_HEIGHT), self.image_buffer)
-            img.save(filename) 
-        except ValueError:
-            log('not enough image data')
-
-    def init_image_receive(self, height, width):
-        self.IMAGE_HEIGHT = height
-        self.IMAGE_WIDTH = width
-        self.image_buffer = b''
-        self.receiving = True
-
-    def got_entire_image(self):
-        _, height = self.info()
-        return height == self.IMAGE_HEIGHT 
-
-
-eddie_image = EddieImage()
+        img = self.get_image()
+        img.save(filename) 
     
 
 

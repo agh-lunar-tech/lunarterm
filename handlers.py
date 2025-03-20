@@ -1,7 +1,7 @@
 from common_config import *
 import struct
 from utils import log
-from image import eddie_image
+# from image import eddie_image
 
 # all handlers must return a byte array object with command
 # in order: 
@@ -189,15 +189,15 @@ def handle_pm_stop_thermal_knife(args_d, serial):
 
 def handle_image_clear(args_d, serial):
     log('clearing image.')
-    eddie_image.clear()
+    # eddie_image.clear()
 
 def handle_image_show(args_d, serial):
     log('showing image.')
-    eddie_image.show()
+    # eddie_image.show()
 
 def handle_image_save(args_d, serial):
     log('saving image.')
-    eddie_image.save('tmp.jpg')
+    # eddie_image.save('tmp.jpg')
 
 def handle_image_info(args_d, serial):
     width, height = eddie_image.info()

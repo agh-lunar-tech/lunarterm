@@ -152,31 +152,67 @@ add_command_parser(com_subparsers, 'info', handle_image_info)
 show_parser = add_command_parser(subparsers, 'cmd', None)
 show_subparsers = show_parser.add_subparsers(help='trigger command for elec*nics team', required=True)
 
-def handle_conops(_, serial):
-    handle_sup_trigger_happy_path({}, serial)
-
-def handle_motor_up(_, serial):
-    args = {'start': 13, 'end': 19}
-    handle_sup_run_partial(args, serial)
-
-def handle_motor_down(_, serial):
-    args = {'start': 34, 'end': 47}
-    handle_sup_run_partial(args, serial)
-
-def handle_image_prev(_, serial):
-    args = {'start': 36, 'end': 47}
-    handle_sup_run_partial(args, serial)
-
-def handle_image_full(_, serial):
-    args = {'start': 19, 'end': 47}
-    handle_sup_run_partial(args, serial)
 
 def handle_idle(_, serial):
-    handle_sup_idle({}, serial)
+    log('Sending sup idle to eddie new.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 9)
+    serial.write(f)
 
-add_command_parser(show_subparsers, 'trigger_conops', handle_conops)
-add_command_parser(show_subparsers, 'motor_up', handle_motor_up)
-add_command_parser(show_subparsers, 'motor_down', handle_motor_down)
-add_command_parser(show_subparsers, 'image_preview', handle_image_prev)
-add_command_parser(show_subparsers, 'image_full', handle_image_full)
+def handle_sen_init(_, serial):
+    log('Sending sen_init command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 0)
+    serial.write(f)
+
+def handle_cut_thermal(_, serial):
+    log('Sending cut_thermal command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 1)
+    serial.write(f)
+
+def handle_motor_up(_, serial):
+    log('Sending motor_up command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 2)
+    serial.write(f)
+
+def handle_img_capture(_, serial):
+    log('Sending img_capture command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 3)
+    serial.write(f)
+
+def handle_img_download(_, serial):
+    log('Sending img_download command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 4)
+    serial.write(f)
+
+def handle_img_send(_, serial):
+    log('Sending img_send command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 6)
+    serial.write(f)
+
+def handle_motor_down_proc(_, serial):
+    log('Sending motor_down command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 7)
+    serial.write(f)
+    
+def handle_led_proc(_, serial):
+    log('Sending led_proc command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 8)
+    serial.write(f)
+
+def handle_start_conops(_, serial):
+    log('Sending start conops command.')
+    f = FRAME_START_SYMBOL + struct.pack('B', 10)
+    serial.write(f)
+
 add_command_parser(show_subparsers, 'idle', handle_idle)
+add_command_parser(show_subparsers, 'sen_init', handle_sen_init)
+add_command_parser(show_subparsers, 'cut_thermal', handle_cut_thermal)
+add_command_parser(show_subparsers, 'motor_up', handle_motor_up)
+add_command_parser(show_subparsers, 'img_capture', handle_img_capture)
+add_command_parser(show_subparsers, 'img_download', handle_img_download)
+add_command_parser(show_subparsers, 'img_send', handle_img_send)
+add_command_parser(show_subparsers, 'led_proc', handle_led_proc)
+add_command_parser(show_subparsers, 'motor_down', handle_motor_down_proc)
+add_command_parser(show_subparsers, 'start_conops', handle_start_conops)
+
+
+
