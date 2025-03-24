@@ -5,7 +5,7 @@
 - (optional) Setup a virtual environment by running `python -m venv .venv`
 - Install required packages with `pip install -r requirements.txt`
 
-
+> ⚠️ **Warning:** Using Python 3.13 may cause issues. We recommend using Python 3.12.
 
 ## Usage:
 run:
