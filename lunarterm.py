@@ -23,9 +23,10 @@ DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames
 
 #states:
 AWAIT_START = 0
-AWAIT_TYPE = 1
-AWAIT_SIZE = 2
-AWAIT_PAYLOAD = 3
+AWAIT_SEQ = 1
+AWAIT_TYPE = 2
+AWAIT_SIZE = 3
+AWAIT_PAYLOAD = 4
 
 class Frame():
     def __init__(self):
@@ -76,9 +77,12 @@ async def eddie_receive(serial):
             out = serial.read(1)
             if state == AWAIT_START:
                 if out == FRAME_START_SYMBOL:
-                    state = AWAIT_TYPE
+                    state = AWAIT_SEQ
                 else:
                     reset()
+            elif state == AWAIT_SEQ:
+                # TODO: check if seq is correct
+                state = AWAIT_TYPE
             elif state == AWAIT_TYPE:
                 frame = Frame()
                 frame.type = out

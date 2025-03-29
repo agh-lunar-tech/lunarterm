@@ -3,6 +3,7 @@ import sys
 from common_config import *
 from handlers import *
 from utils import add_command_parser, exit
+from SenderSeq import SenderSeq
 
 parser = argparse.ArgumentParser(prog='')
 parser.exit = exit
@@ -155,52 +156,52 @@ show_subparsers = show_parser.add_subparsers(help='trigger command for elec*nics
 
 def handle_idle(_, serial):
     log('Sending sup idle to eddie new.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 9)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 9)
     serial.write(f)
 
 def handle_sen_init(_, serial):
     log('Sending sen_init command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 0)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 0)
     serial.write(f)
 
 def handle_cut_thermal(_, serial):
     log('Sending cut_thermal command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 1)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 1)
     serial.write(f)
 
 def handle_motor_up(_, serial):
     log('Sending motor_up command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 2)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 2)
     serial.write(f)
 
 def handle_img_capture(_, serial):
     log('Sending img_capture command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 3)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 3)
     serial.write(f)
 
 def handle_img_download(_, serial):
     log('Sending img_download command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 4)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 4)
     serial.write(f)
 
 def handle_img_send(_, serial):
     log('Sending img_send command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 6)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 6)
     serial.write(f)
 
 def handle_motor_down_proc(_, serial):
     log('Sending motor_down command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 7)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 7)
     serial.write(f)
     
 def handle_led_proc(_, serial):
     log('Sending led_proc command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 8)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 8)
     serial.write(f)
 
 def handle_start_conops(_, serial):
     log('Sending start conops command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 10)
+    f = FRAME_START_SYMBOL + SenderSeq.get_and_then_increment() + struct.pack('B', 10)
     serial.write(f)
 
 add_command_parser(show_subparsers, 'idle', handle_idle)
@@ -213,6 +214,3 @@ add_command_parser(show_subparsers, 'img_send', handle_img_send)
 add_command_parser(show_subparsers, 'led_proc', handle_led_proc)
 add_command_parser(show_subparsers, 'motor_down', handle_motor_down_proc)
 add_command_parser(show_subparsers, 'start_conops', handle_start_conops)
-
-
-
