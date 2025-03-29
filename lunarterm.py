@@ -126,6 +126,9 @@ async def eddie_receive(serial):
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
+                    elif frame.type == BAD_FRAME_SEQ_FRAME:
+                        expected_seq, received_seq = struct.unpack('HH', frame.payload)
+                        print('[EDDY]', f'BAD FRAME SEQ -> expected seq: {expected_seq}, received seq: {received_seq}')
                     reset()
             start_time = perf_counter()
     except asyncio.CancelledError:
