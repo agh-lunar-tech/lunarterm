@@ -9,9 +9,7 @@ from utils import FakeQuit
 from cli_parser import parser
 import argparse
 from common_config import * 
-# from image import eddie_image
 from utils import log
-#import frames_proto/lunaris_downlink_pb2
 import socket
 import argparse
 from image import EddieImage
@@ -66,8 +64,8 @@ async def eddie_receive(serial):
         frame = None
         start_time = 0
     reset()
-    try:
-        while True:
+    while True:
+        try:
             while serial.in_waiting == 0:
                 if state != AWAIT_START and perf_counter() - start_time > FRAME_TIMEOUT:
                     log("TIMEOUT")
@@ -83,18 +81,12 @@ async def eddie_receive(serial):
                 frame = Frame()
                 frame.type = out
                 frame.size = frame_sizes[frame.type]
-                # if frame.type == IMAGE_FRAME and not eddie_image.receiving:
-                    # eddie_image.init_image_receive(480, 640)
-                # elif frame.type == IMAGE_PREV_FRAME and not eddie_image.receiving:
-                    # eddie_image.init_image_receive(48, 64)
-                # elif frame.type == IMAGE_INIT_FRAME:
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
                 # print('xd', out)
                 current += 1
                 frame.payload += out
                 if current == frame.size:
-                    # Send full frame (starting byte + type + payload) over UDP
                     udp_socket.sendto(FRAME_START_SYMBOL+frame.type+frame.payload, UDP_TARGET)
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
@@ -122,17 +114,13 @@ async def eddie_receive(serial):
                     elif frame.type == TELEMETRY_FRAME:
                         print('[INFO] - Telemetry frame received')
                         frame.pretty_print()
-
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
                     reset()
             start_time = perf_counter()
-    except asyncio.CancelledError:
-        print('asyncio.CancelledError')
-    except Exception as e:
-        print('got exception here')
-        print(e)
+        except Exception as e :
+            print("[INFO] Got exception: ", e)
 
 async def interactive_shell(serial):
     global current_image
