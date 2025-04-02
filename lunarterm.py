@@ -9,14 +9,15 @@ from utils import FakeQuit
 from cli_parser import parser
 import argparse
 from common_config import * 
-from image import eddie_image
 from utils import log
-from frames_proto import lunaris_downlink_pb2
 import json,csv
 import os
 import time as time_lib
+import socket
+import argparse
+from image import EddieImage
 
-DEFAULT_PORT = "/dev/ttyUSB1"
+DEFAULT_PORT = "/dev/COM9"
 DEFAULT_BAUDRATE = 115200
 FRAME_TIMEOUT = 0.4
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
@@ -104,6 +105,12 @@ async def eddie_receive(serial):
     current = 0
     start_time = 0
     image_count = 0
+    current_image = None
+
+    # Initializing UDP socket
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    UDP_TARGET = ("127.0.0.1", 10015)
+
     def reset():
         nonlocal state, current, frame, start_time
         state = AWAIT_START
@@ -111,8 +118,8 @@ async def eddie_receive(serial):
         frame = None
         start_time = 0
     reset()
-    try:
-        while True:
+    while True:
+        try:
             while serial.in_waiting == 0:
                 if state != AWAIT_START and perf_counter() - start_time > FRAME_TIMEOUT:
                     log("TIMEOUT")
@@ -128,26 +135,36 @@ async def eddie_receive(serial):
                 frame = Frame()
                 frame.type = out
                 frame.size = frame_sizes[frame.type]
-                if frame.type == IMAGE_FRAME and not eddie_image.receiving:
-                    eddie_image.init_image_receive(480, 640)
-                elif frame.type == IMAGE_PREV_FRAME and not eddie_image.receiving:
-                    eddie_image.init_image_receive(48, 64)
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
+                # print('xd', out)
                 current += 1
                 frame.payload += out
                 if current == frame.size:
+                    udp_socket.sendto(FRAME_START_SYMBOL+frame.type+frame.payload, UDP_TARGET)
                     if frame.type == TEXT_FRAME:
                         print('[EDDY]', frame.to_string())
-                    elif frame.type == IMAGE_FRAME or frame.type == IMAGE_PREV_FRAME:
-                        eddie_image.append_line(frame.payload)
-                        log(f'image loading: {eddie_image.info_percent():.2f}%')
-                        if eddie_image.got_entire_image():
-                            log('got image from eddie')
-                            eddie_image.save(f'images/image{image_count}.jpg')
-                            image_count += 1
-                            eddie_image.show()
-                            eddie_image.clear()
+                    elif frame.type == IMAGE_INIT_FRAME:
+                        print('[INFO] got image init frame') 
+
+                        image_id, image_type, is_compressed, slot, image_size, image_part_size = struct.unpack("BBBBII", frame.payload)
+                        print("image id: ", image_id)
+                        print("image type: ", image_type)
+                        print("is compressed: ", is_compressed)
+                        print("slot: ", slot)
+                        print("image size: ", image_size)
+                        print("image part size: ", image_part_size)
+
+                        # id, type, is_compressed, slot, size, part_size
+                        current_image = EddieImage(image_id, image_type, is_compressed, slot, image_size, image_part_size)
+                    elif frame.type == IMAGE_PART_FRAME:
+                        print('[INFO] got image part frame')
+                        offset = struct.unpack("I", frame.payload[0:4])[0]
+                        print('[INFO] offset', offset)
+                        current_image.add_data(offset, frame.payload[4:])
+                        if offset + current_image.part_size >= current_image.size:
+                            print('[INFO] got whole image YAY')
+                            current_image.show()
                     elif frame.type == TELEMETRY_FRAME:
                         print('[INFO] - Telemetry frame received')
                         frame.telemetry_ugly_print()
@@ -161,10 +178,8 @@ async def eddie_receive(serial):
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
                     reset()
             start_time = perf_counter()
-    except asyncio.CancelledError:
-        print('asyncio.CancelledError')
-    except Exception as e:
-        print(e)
+        except Exception as e :
+            print("[INFO] Got exception: ", e)
 
 async def interactive_shell(serial):
     global current_image
@@ -196,9 +211,12 @@ async def app(port, baudrate):
             pass
 
 def main():
-    port = input(f'Port (default: {DEFAULT_PORT}): ').strip() or DEFAULT_PORT
-    baudrate = int(input(f'Baudrate (default: {DEFAULT_BAUDRATE}): ').strip() or DEFAULT_BAUDRATE)
-    asyncio.run(app(port, baudrate))
+    parser = argparse.ArgumentParser(description="Serial port communication")
+    parser.add_argument("-p", "--port", default=DEFAULT_PORT, help=f"Port (default: {DEFAULT_PORT})")
+    parser.add_argument("-b", "--baudrate", type=int, default=DEFAULT_BAUDRATE, help=f"Baudrate (default: {DEFAULT_BAUDRATE})")
+    args = parser.parse_args()
+    
+    asyncio.run(app(args.port, args.baudrate))
 
 if __name__ == "__main__":
     main()
