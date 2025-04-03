@@ -79,6 +79,15 @@ def handle_start_conops(_, serial):
     f = FRAME_START_SYMBOL + struct.pack('B', 10)
     serial.write(f)
 
+def handle_thermal_tests(_, serial):
+    try:
+        x = int(args.x)  # Extract and convert argument to integer
+        log(f'Sending thermal tests command with x = {x}.')
+        f = FRAME_START_SYMBOL + struct.pack('B', 11 + x)
+        serial.write(f)
+    except ValueError:
+        log('Invalid value for x. Please provide an integer.')
+
 add_command_parser(show_subparsers, 'idle', handle_idle)
 add_command_parser(show_subparsers, 'sen_init', handle_sen_init)
 add_command_parser(show_subparsers, 'cut_thermal', handle_cut_thermal)
@@ -89,6 +98,9 @@ add_command_parser(show_subparsers, 'img_send', handle_img_send)
 add_command_parser(show_subparsers, 'led_proc', handle_led_proc)
 add_command_parser(show_subparsers, 'motor_down', handle_motor_down_proc)
 add_command_parser(show_subparsers, 'start_conops', handle_start_conops)
+
+thermal_test_parser = add_command_parser(show_subparsers, 'run_thermal_test', handle_thermal_tests)
+thermal_test_parser.add_argument('x', type=int, help='Number to add to base command 11')
 
 
 
