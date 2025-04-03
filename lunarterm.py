@@ -40,7 +40,7 @@ class Frame():
     def telemetry_pretty_print(self):
         pass
         # f =  b'\x00\x00\x00\
-        x06' + self.payload
+        # x06' + self.payload
         # print(f)
         # sensor_data = lunaris_downlink_pb2.SensorData()
         # try:
@@ -68,13 +68,13 @@ class Frame():
         # Convert the sensor data to a more readable format
         sesnor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
         sensor_data["icm_temp"] = sensor_data["icm_temp"] / 1000.0
-        # sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
-        # sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
-        # sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
-        # sensor_data["icm_acc_data.x"] = sensor_data["icm_acc_data.x"] / 2 / 0x1FFF
-        # sensor_data["icm_acc_data.y"] = sensor_data["icm_acc_data.y"] / 2 / 0x1FFF
-        # sensor_data["icm_acc_data.z"] = sensor_data["icm_acc_data.z"] / 2 / 0x1FFF
-        # sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 1000
+        sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
+        sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
+        sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.x"] = sensor_data["icm_acc_data.x"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.y"] = sensor_data["icm_acc_data.y"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.z"] = sensor_data["icm_acc_data.z"] / 2 / 0x1FFF
+        sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 1000
     
         return sensor_data
 

@@ -47,6 +47,8 @@ POWER_TYPE = int
 
 RESISTOR_ID_TYPE = int
 
+THERMAL_TESTS_TYPE = int
+
 class ModuleId(Enum):
     SEN = 0
     PM = 1
@@ -59,6 +61,7 @@ class CmdId(Enum):
     SUP_C_IDLE = 0
     SUP_C_TRIGGER_HAPPY_PATH = 1
     SUP_C_RUN_PARTIAL_HAPPY_PATH = 2
+    SUP_C_RUN_THERMAL_TESTS = 11
 
     CMR_C_SET_MODE = 20
     CMR_C_CAPTURE = 21
