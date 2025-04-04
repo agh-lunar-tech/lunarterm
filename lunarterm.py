@@ -13,10 +13,14 @@ from utils import log
 import socket
 import argparse
 from image import EddieImage
+from frames_proto import lunaris_downlink_pb2
+import json,csv
+import os
+import time as time_lib
 
-DEFAULT_PORT = "/dev/ttyUSB0"
+DEFAULT_PORT = "/dev/ttyUSB1"
 DEFAULT_BAUDRATE = 115200
-FRAME_TIMEOUT = 0.1
+FRAME_TIMEOUT = 0.4
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
 
 #states:
@@ -34,13 +38,74 @@ class Frame():
     def to_string(self):
         return self.payload.decode('utf-8', errors="ignore")
 
-    def pretty_print(self):
-        sensor_data = lunaris_downlink_pb2.SensorData()
-        sensor_data.ParseFromString(frame.payload)
+    def telemetry_pretty_print(self):
+        pass
+        # f =  b'\x00\x00\x00\
+        # x06' + self.payload
+        # print(f)
+        # sensor_data = lunaris_downlink_pb2.SensorData()
+        # try:
+        #     sensor_data.ParseFromString(f)
+        #     print(sensor_data)
 
-        print("Parsed Sensor Data:")
-        print(sensor_data)
+        # except Exception as e:
+        #     print("Error during deserialization:", e)
+        
+    def telemetry_parse_data(self):
+        format_str = "<3h 3h h 3i h 6I 2h 2? 3B H"
+        field_names = [
+            "icm_gyr_data.x", "icm_gyr_data.y", "icm_gyr_data.z",
+            "icm_acc_data.x", "icm_acc_data.y", "icm_acc_data.z",
+            "icm_temp", "mmc_mag_data.x", "mmc_mag_data.y", "mmc_mag_data.z",
+            # "rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose",
+            # "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity",
+            # "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok",
+            "encoder_sensor", "hall_endstop", "reflective_endstop", "light_sensor"
+        ]
+        
+        unpacked_data = struct.unpack(format_str, self.payload)
+        sensor_data = dict(zip(field_names, unpacked_data))
+        # Convert the sensor data to a more readable format
+        # sensor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
+        sensor_data["icm_temp"] = sensor_data["icm_temp"] / 100.0
+        sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
+        sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
+        sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.x"] = sensor_data["icm_acc_data.x"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.y"] = sensor_data["icm_acc_data.y"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.z"] = sensor_data["icm_acc_data.z"] / 2 / 0x1FFF
+        sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 1000
+    
+        return sensor_data
 
+    def telemetry_ugly_print(self):
+        sensor_data = self.telemetry_parse_data()
+        for key, value in sensor_data.items():
+            print(f"{key}: {value}")
+
+
+    def telemetry_dump_json( self,output_path="log/last_telemetry.json"):
+        sensor_data = self.telemetry_parse_data()
+        json_data = json.dumps(sensor_data, indent=4)
+        
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            f.write(json_data)
+        
+        return json_data
+
+    def telemetry_dump_csv(self, timestamp, output_csv="log/telemetry_data.csv" ):
+        sensor_data = self.telemetry_parse_data()
+        sensor_data_with_time = {"time": timestamp, **sensor_data}        
+        file_exists = os.path.exists(output_csv)
+        
+        with open(output_csv, mode="a", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=["time"] + list(sensor_data.keys()))
+            if not file_exists:
+                writer.writeheader()
+            
+            writer.writerow(sensor_data_with_time)
+                
     def log(self):
         pass
 
@@ -83,7 +148,6 @@ async def eddie_receive(serial):
                 frame.size = frame_sizes[frame.type]
                 state = AWAIT_PAYLOAD
             elif state == AWAIT_PAYLOAD:
-                # print('xd', out)
                 current += 1
                 frame.payload += out
                 if current == frame.size:
@@ -113,7 +177,12 @@ async def eddie_receive(serial):
                             current_image.show()
                     elif frame.type == TELEMETRY_FRAME:
                         print('[INFO] - Telemetry frame received')
-                        frame.pretty_print()
+                        frame.telemetry_ugly_print()
+
+                        timestamp = time_lib.strftime("%Y-%m-%d %H:%M:%S", time_lib.gmtime())
+                        frame.telemetry_dump_json()
+                        frame.telemetry_dump_csv(timestamp)
+
                     elif frame.type == ERROR_FRAME:
                         last_command, last_feedback = struct.unpack('HH', frame.payload)
                         print('[EDDY]', f'ERROR -> last command: {last_command}, last feedback: {last_feedback}') # TODO:eddie function for logging from eddie
