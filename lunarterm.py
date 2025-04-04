@@ -57,17 +57,17 @@ class Frame():
             "icm_gyr_data.x", "icm_gyr_data.y", "icm_gyr_data.z",
             "icm_acc_data.x", "icm_acc_data.y", "icm_acc_data.z",
             "icm_temp", "mmc_mag_data.x", "mmc_mag_data.y", "mmc_mag_data.z",
-            "mmc_temp", "rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose",
-            "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity",
-            "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok",
+            # "rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose",
+            # "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity",
+            # "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok",
             "encoder_sensor", "hall_endstop", "reflective_endstop", "light_sensor"
         ]
         
         unpacked_data = struct.unpack(format_str, self.payload)
         sensor_data = dict(zip(field_names, unpacked_data))
         # Convert the sensor data to a more readable format
-        sesnor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
-        sensor_data["icm_temp"] = sensor_data["icm_temp"] / 1000.0
+        # sensor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
+        sensor_data["icm_temp"] = sensor_data["icm_temp"] / 100.0
         sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
         sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
         sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
