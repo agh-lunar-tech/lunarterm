@@ -66,7 +66,7 @@ class Frame():
         unpacked_data = struct.unpack(format_str, self.payload)
         sensor_data = dict(zip(field_names, unpacked_data))
         # Convert the sensor data to a more readable format
-        sesnor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
+        sensor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
         sensor_data["icm_temp"] = sensor_data["icm_temp"] / 1000.0
         sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
         sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
@@ -74,9 +74,20 @@ class Frame():
         sensor_data["icm_acc_data.x"] = sensor_data["icm_acc_data.x"] / 2 / 0x1FFF
         sensor_data["icm_acc_data.y"] = sensor_data["icm_acc_data.y"] / 2 / 0x1FFF
         sensor_data["icm_acc_data.z"] = sensor_data["icm_acc_data.z"] / 2 / 0x1FFF
-        sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 1000
+        sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 0x1FFF
+        sensor_data["mmc_mag_data.y"] = sensor_data["mmc_mag_data.y"] / 0x1FFF
+        sensor_data["mmc_mag_data.z"] = sensor_data["mmc_mag_data.z"] / 0x1FFF
     
         return sensor_data
+
+    def telemetry_pretty_print(self):
+        sensor_data = self.telemetry_parse_data()
+        excluded_keys = {"rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose", "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity", "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok"}
+        
+        for key, value in sensor_data.items():
+            if key not in excluded_keys:
+                print(f"{key}: {value}")
+
 
     def telemetry_ugly_print(self):
         sensor_data = self.telemetry_parse_data()
@@ -178,7 +189,8 @@ async def eddie_receive(serial):
                             current_image.show()
                     elif frame.type == TELEMETRY_FRAME:
                         print('[INFO] - Telemetry frame received')
-                        frame.telemetry_ugly_print()
+                        # frame.telemetry_ugly_print()
+                        frame.telemetry_pretty_print()
 
                         timestamp = time_lib.strftime("%Y-%m-%d %H:%M:%S", time_lib.gmtime())
                         frame.telemetry_dump_json()

@@ -31,59 +31,76 @@ show_subparsers = show_parser.add_subparsers(help='trigger command for elec*nics
 
 def handle_idle(_, serial):
     log('Sending sup idle to eddie new.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 9)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 9)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 9, 0)
+
     serial.write(f)
 
 def handle_sen_init(_, serial):
     log('Sending sen_init command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 0)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 0)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 0, 0)
+
     serial.write(f)
 
 def handle_cut_thermal(_, serial):
     log('Sending cut_thermal command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 1)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 1)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 1, 0)
+
     serial.write(f)
 
 def handle_motor_up(_, serial):
     log('Sending motor_up command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 2)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 2)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 2, 0)
+
     serial.write(f)
 
 def handle_img_capture(_, serial):
     log('Sending img_capture command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 3)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 3)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 3, 0)
+
     serial.write(f)
 
 def handle_img_download(_, serial):
     log('Sending img_download command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 4)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 4)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 4, 0)
+
     serial.write(f)
 
 def handle_img_send(_, serial):
     log('Sending img_send command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 6)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 6)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 6, 0)
+
     serial.write(f)
 
 def handle_motor_down_proc(_, serial):
     log('Sending motor_down command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 7)
+    # f = FRAME_START_SYMBOL + struct.pack('B', 7)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 7, 0)
     serial.write(f)
     
 def handle_led_proc(_, serial):
     log('Sending led_proc command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 8)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 8, 0)
     serial.write(f)
 
 def handle_start_conops(_, serial):
     log('Sending start conops command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 10)
+    f = FRAME_START_SYMBOL + struct.pack('>BH', 12, test_num)
     serial.write(f)
 
-def handle_thermal_tests(_, serial):
+def handle_thermal_tests(args, serial):
     try:
-        x = int(args.x)  # Extract and convert argument to integer
-        log(f'Sending thermal tests command with x = {x}.')
-        f = FRAME_START_SYMBOL + struct.pack('B', 11 + x)
+        test_num = int(args['test_num'])
+        if test_num < 0 or test_num > 255:
+            test_num = 0
+        # f = FRAME_START_SYMBOL + struct.pack('B', 12) + struct.pack('B', test_num)
+        f = FRAME_START_SYMBOL + struct.pack('>BH', 12, test_num)
         serial.write(f)
     except ValueError:
         log('Invalid value for x. Please provide an integer.')
@@ -100,7 +117,7 @@ add_command_parser(show_subparsers, 'motor_down', handle_motor_down_proc)
 add_command_parser(show_subparsers, 'start_conops', handle_start_conops)
 
 thermal_test_parser = add_command_parser(show_subparsers, 'run_thermal_test', handle_thermal_tests)
-thermal_test_parser.add_argument('x', type=int, help='Number to add to base command 11')
+thermal_test_parser.add_argument('test_num', type=int, help='Thermal test ID, refer to thermal_test_list.h for details')
 
 
 
