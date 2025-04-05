@@ -67,26 +67,40 @@ class Frame():
         sensor_data = dict(zip(field_names, unpacked_data))
         # Convert the sensor data to a more readable format
         sensor_data["mmc_temp"] = sensor_data["mmc_temp"] / 1000.0
-        sensor_data["icm_temp"] = sensor_data["icm_temp"] / 1000.0
-        sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
-        sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
-        sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
-        sensor_data["icm_acc_data.x"] = sensor_data["icm_acc_data.x"] / 2 / 0x1FFF
-        sensor_data["icm_acc_data.y"] = sensor_data["icm_acc_data.y"] / 2 / 0x1FFF
-        sensor_data["icm_acc_data.z"] = sensor_data["icm_acc_data.z"] / 2 / 0x1FFF
-        sensor_data["mmc_mag_data.x"] = sensor_data["mmc_mag_data.x"] / 0x1FFF
-        sensor_data["mmc_mag_data.y"] = sensor_data["mmc_mag_data.y"] / 0x1FFF
-        sensor_data["mmc_mag_data.z"] = sensor_data["mmc_mag_data.z"] / 0x1FFF
+        sensor_data["icm_temp"] = sensor_data["icm_temp"] / 100.0
+        # sensor_data["icm_gyr_data.x"] = sensor_data["icm_gyr_data.x"] / 2 / 0x1FFF
+        # sensor_data["icm_gyr_data.y"] = sensor_data["icm_gyr_data.y"] / 2 / 0x1FFF
+        # sensor_data["icm_gyr_data.z"] = sensor_data["icm_gyr_data.z"] / 2 / 0x1FFF
+        sensor_data["icm_acc_data.x"] = round(sensor_data["icm_acc_data.x"] / 0x3FFF, 4)
+        sensor_data["icm_acc_data.y"] = round(sensor_data["icm_acc_data.y"] / 0x3FFF, 4)
+        sensor_data["icm_acc_data.z"] = round(sensor_data["icm_acc_data.z"] / 0x3FFF, 4)
+        sensor_data["mmc_mag_data.x"] = round(sensor_data["mmc_mag_data.x"] / 0x1FFF, 4)
+        sensor_data["mmc_mag_data.y"] = round(sensor_data["mmc_mag_data.y"] / 0x1FFF, 4)
+        sensor_data["mmc_mag_data.z"] = round(sensor_data["mmc_mag_data.z"] / 0x1FFF, 4)
     
         return sensor_data
 
+
     def telemetry_pretty_print(self):
         sensor_data = self.telemetry_parse_data()
-        excluded_keys = {"rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose", "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity", "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok"}
-        
-        for key, value in sensor_data.items():
-            if key not in excluded_keys:
-                print(f"{key}: {value}")
+        excluded_keys = {
+            "rdn_serial_dose", "rdn_sen1_dose", "rdn_sen2_dose",
+            "rdn_serial_intensity", "rdn_sen1_intensity", "rdn_sen2_intensity",
+            "rdn_temp", "rdn_vdd", "rdn_crystal_ok", "rdn_analog_ok"
+        }
+
+        included_items = [(key, value) for key, value in sensor_data.items() if key not in excluded_keys]
+        max_key_length = max(len(key) for key, _ in included_items)
+        col_width = max_key_length + 10
+        columns = 3
+
+        rows = [included_items[i:i+columns] for i in range(0, len(included_items), columns)]
+
+        for row in rows:
+            for key, value in row:
+                print(f"{key.ljust(max_key_length)}: {str(value).ljust(10)}", end='  ')
+            print()
+
 
 
     def telemetry_ugly_print(self):
