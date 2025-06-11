@@ -1,9 +1,27 @@
-
 from enum import Enum
 import argparse
+import time as time_lib
+import logging
+
+
+timestamp = time_lib.strftime("%Y-%m-%d %H-%M-%S", time_lib.localtime())
+logging.basicConfig(
+    filename=f"logs/logs{timestamp}",      
+    filemode='w',                
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    force=True
+)
 
 def log(text):
-     print('[INFO] ' + text)
+    timestamp = time_lib.strftime("%Y-%m-%d %H-%M-%S", time_lib.localtime())
+    logging.info(text)
+    print(timestamp + '[INFO]' + text)
+
+def log_eddie(text):
+    timestamp = time_lib.strftime("%Y-%m-%d %H-%M-%S", time_lib.localtime())
+    logging.info(text)
+    print(timestamp + ' [EDDY] ' + text)
 
 class FakeQuit(Exception):
         pass
