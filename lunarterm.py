@@ -20,7 +20,7 @@ import time as time_lib
 
 DEFAULT_PORT = "/dev/ttyUSB1"
 DEFAULT_BAUDRATE = 115200
-FRAME_TIMEOUT = 0.4
+FRAME_TIMEOUT = 5
 DEFAULT_MODE = 0 # 0 - everything in everything out, 1 - only frames 
 
 #states:
