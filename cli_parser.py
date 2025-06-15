@@ -81,8 +81,19 @@ def handle_start_conops(_, serial):
 
 def handle_reset_mcu(_, serial):
     log('Sending reset mcu command.')
-    f = FRAME_START_SYMBOL + struct.pack('B', 100)
+    f = struct.pack('B', 100)
     serial.write(f)
+
+def start_rad_tests(_, serial):
+    log('Sending command to start the tests!')
+    f = struct.pack('B', 150)
+    serial.write(f)
+
+def stop_rad_tests(_, serial):
+    log('Sending command to stop the tests!')
+    f = struct.pack('B', 200)
+    serial.write(f)
+
 
 def handle_thermal_tests(_, serial):
     try:
@@ -104,6 +115,8 @@ def handle_thermal_tests(_, serial):
 # add_command_parser(show_subparsers, 'motor_down', handle_motor_down_proc)
 # add_command_parser(show_subparsers, 'start_conops', handle_start_conops)
 add_command_parser(show_subparsers, 'reset', handle_reset_mcu)
+add_command_parser(show_subparsers, 'start', start_rad_tests)
+add_command_parser(show_subparsers, 'stop', stop_rad_tests)
 
 # thermal_test_parser = add_command_parser(show_subparsers, 'run_thermal_test', handle_thermal_tests)
 # thermal_test_parser.add_argument('x', type=int, help='Number to add to base command 11')
